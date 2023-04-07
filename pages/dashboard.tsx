@@ -28,7 +28,12 @@ const Dashboard = () => {
 }
 
 const AuthorizedDashboard = () => {
-    const [currentPlaylistId, setCurrentPlaylistId] = useState<string | undefined>(undefined)
+    // tie current playlist ID into localstorage for some persistence between page refreshes
+    const [currentPlaylistId, setCurrentPlaylistId] = useState<string | undefined>(localStorage.getItem("MIXO_CURRENT_PLAYLIST_ID") ?? undefined)
+    useEffect(() => {
+        if (!currentPlaylistId) return
+        localStorage.setItem("MIXO_CURRENT_PLAYLIST_ID", currentPlaylistId)
+    }, [currentPlaylistId])
 
     const [trackSearch, setTrackSearch] = useState("")
     const [newPlaylistName, setNewPlaylistName] = useState("")
@@ -39,7 +44,7 @@ const AuthorizedDashboard = () => {
     const { mutate: newPlaylist } = trpc.newPlaylist.useMutation()
     const { data: playlists, refetch: getPlaylists } = trpc.listPlaylists.useQuery({})
     const { mutate: addSongToPlaylist } = trpc.addSongToPlaylist.useMutation()
-    const { data: currentFullPlaylistData } = trpc.getFullPlaylistById.useQuery({ playlistId: currentPlaylistId ?? "" }, { enabled: currentPlaylistId != undefined })
+    const { data: currentFullPlaylistData, refetch: refetchCurrentPlaylist } = trpc.getFullPlaylistById.useQuery({ playlistId: currentPlaylistId ?? "" }, { enabled: currentPlaylistId != undefined })
 
     const userDetails: { displayName: string, imageUrl?: string } | undefined = spotifyUserDetails ? {
         displayName: spotifyUserDetails.display_name,
@@ -48,10 +53,8 @@ const AuthorizedDashboard = () => {
     const playlistsMetadata: SidebarPlaylistMetadata[] = playlists ?? []
     const currentPlaylist: FullPlaylist | undefined = currentFullPlaylistData
 
-    useConsoleLog(`CURRENT PLAYLIST: ${JSON.stringify(currentPlaylist)}`)
-
     return (
-        <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={setCurrentPlaylistId}>
+        <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist}>
             {currentPlaylist ? (
                 <PlaylistView playlist={currentPlaylist} />
             ) : (<> TODOSelect a playlist</>)}

@@ -4,13 +4,15 @@ import React from 'react'
 
 const Login = () => {
     return (
-        <Flex w="100%" justifyContent="center">
+        <Flex w="100%" h="100vh" justifyContent="center" alignItems="center">
             <Link href={getSpotifyAuthUrl()}>
-                <Button>
-                    Login
+                <Button _hover={{
+                    bg: 'cyan.400'
+                }} color="white" fontWeight="bold">
+                    login
                 </Button>
             </Link>
-        </Flex>
+        </Flex >
     )
 }
 

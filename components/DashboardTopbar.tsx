@@ -3,14 +3,17 @@ import { IconButton, Avatar, Box, Flex, HStack, useColorModeValue, Text, FlexPro
 import { FiMenu, FiChevronDown } from 'react-icons/fi';
 import SearchModal from './SearchModal';
 import { SearchIcon } from '@chakra-ui/icons';
+import { FullPlaylist } from './PlaylistView';
 
 const DEFAULT_PROFILE_IMAGE_URL = "https://images.unsplash.com/photo-1619946794135-5bc917a27793?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"
 
 interface MobileProps extends FlexProps {
     onOpen: () => void;
-    userDetails: { displayName: string, imageUrl?: string } | undefined
+    userDetails: { displayName: string, imageUrl?: string } | undefined,
+    currentPlaylist?: FullPlaylist,
+    refreshCurrentPlaylist: () => {}
 }
-export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) => {
+export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshCurrentPlaylist, ...rest }: MobileProps) => {
 
     const { isOpen: searchIsOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
 
@@ -24,9 +27,10 @@ export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) =
             borderBottomWidth="1px"
             borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
             justifyContent={{ base: 'space-between' }}
+            position="relative"
             {...rest}>
 
-            <SearchModal onClose={onSearchClose} isOpen={searchIsOpen} />
+            <SearchModal onClose={onSearchClose} isOpen={searchIsOpen} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refreshCurrentPlaylist} />
 
             <IconButton
                 display={{ base: 'flex', md: 'none' }}
@@ -40,7 +44,12 @@ export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) =
                 display={{ base: 'flex', md: 'none' }}
                 fontSize="2xl"
                 fontFamily="monospace"
-                fontWeight="bold">
+                fontWeight="bold"
+                position="absolute"
+                minW="100%"
+                justifyContent="center"
+                left="0"
+                >
                 mixo.
             </Text>
 
@@ -65,6 +74,7 @@ export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) =
                     <Menu>
                         <MenuButton
                             py={2}
+                            ml={4}
                             transition="all 0.3s"
                             _focus={{ boxShadow: 'none' }}>
                             <HStack>

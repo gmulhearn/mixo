@@ -5,8 +5,8 @@ import React from 'react'
 export const DEFAULT_COVER_ART_IMAGE = "TODO"
 
 export interface FullPlaylist {
-    id: String,
-    name: String,
+    id: string,
+    name: string,
     songs: GenericTrack[]
 }
 
