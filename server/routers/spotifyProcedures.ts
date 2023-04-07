@@ -17,15 +17,3 @@ export const meProcedure = procedure
 
         return res;
     })
-
-// export const searchTracksProcedure = procedure
-//     .input(
-//         z.object({
-//             accessToken: z.string(),
-//             searchQuery: z.string()
-//         })
-//     ).query(async ({ input }) => {
-//         const res = await spotifyAPI.searchTracks(input.accessToken, input.searchQuery, 10, 0)
-
-//         return res
-//     })

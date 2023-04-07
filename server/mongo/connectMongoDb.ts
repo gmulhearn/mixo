@@ -6,7 +6,7 @@ const connectMongoDb = async () => {
         throw new Error("MONGODB_URI must be defined in process env")
     }
 
-    console.log("DEBUG!!!!! CONNECTION MONGO WAS CALLED")
+    console.log("ESTABLISHING MONGOOSE CONNECTION")
 
     await mongoose.connect(uri)
 }

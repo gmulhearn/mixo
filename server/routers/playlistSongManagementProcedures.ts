@@ -118,7 +118,7 @@ interface UserPlaylistFullDetails {
     songs: GenericTrack[]
 }
 
-export const getFullPlaylistById = procedure
+export const getFullPlaylistByIdProcedure = procedure
     .input(z.object({
         playlistId: z.string()
     }))
