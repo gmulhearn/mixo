@@ -1,6 +1,8 @@
 import React from 'react';
-import { IconButton, Avatar, Box, Flex, HStack, useColorModeValue, Text, FlexProps, Menu, MenuButton, MenuDivider, MenuItem, MenuList } from '@chakra-ui/react';
+import { IconButton, Avatar, Box, Flex, HStack, useColorModeValue, Text, FlexProps, Menu, MenuButton, MenuDivider, MenuItem, MenuList, useDisclosure, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 import { FiMenu, FiChevronDown } from 'react-icons/fi';
+import SearchModal from './SearchModal';
+import { SearchIcon } from '@chakra-ui/icons';
 
 const DEFAULT_PROFILE_IMAGE_URL = "https://images.unsplash.com/photo-1619946794135-5bc917a27793?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=b616b2c5b373a80ffc9636ba24f7a4a9"
 
@@ -9,6 +11,9 @@ interface MobileProps extends FlexProps {
     userDetails: { displayName: string, imageUrl?: string } | undefined
 }
 export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) => {
+
+    const { isOpen: searchIsOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
+
     return (
         <Flex
             ml={{ base: 0, md: 60 }}
@@ -18,8 +23,11 @@ export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) =
             bg={useColorModeValue('white', 'gray.900')}
             borderBottomWidth="1px"
             borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
-            justifyContent={{ base: 'space-between', md: 'flex-end' }}
+            justifyContent={{ base: 'space-between' }}
             {...rest}>
+
+            <SearchModal onClose={onSearchClose} isOpen={searchIsOpen} />
+
             <IconButton
                 display={{ base: 'flex', md: 'none' }}
                 onClick={onOpen}
@@ -36,8 +44,24 @@ export const DashboardTopbar = ({ onOpen, userDetails, ...rest }: MobileProps) =
                 mixo.
             </Text>
 
+            <InputGroup display={{ base: 'none', md: 'flex' }} maxW="30em" cursor="text" onClick={onSearchOpen}>
+                <InputLeftElement
+                    pointerEvents='none'
+                    children={<SearchIcon />}
+                />
+                <Input placeholder="Search for songs" tabIndex={-1} style={{ pointerEvents: "none" }} />
+            </InputGroup>
+
             <HStack spacing={{ base: '0', md: '6' }}>
                 <Flex alignItems={'center'}>
+                    <IconButton
+                        display={{ base: 'flex', md: 'none' }}
+                        onClick={onSearchOpen}
+                        variant="ghost"
+                        aria-label="open search"
+                        mr="1"
+                        icon={<SearchIcon />}
+                    />
                     <Menu>
                         <MenuButton
                             py={2}
