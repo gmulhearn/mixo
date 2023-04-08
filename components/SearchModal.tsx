@@ -1,17 +1,19 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
+import { useConsoleLog } from '@/utils/useConsoleLog'
 import { AddIcon, CheckIcon, SearchIcon } from '@chakra-ui/icons'
 import { Box, Divider, HStack, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightElement, Modal, ModalContent, ModalOverlay, Spinner, Text, VStack } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import { DEFAULT_COVER_ART_IMAGE, FullPlaylist } from './PlaylistView'
 
+// Class used to track what string was last requested to be searched.
+// Used in conjunction with a delay after searching to ensure the search
+// API is not spammed.
 class PendingSearch {
     pendingSearch: string = ""
-
     getPendingSearch() {
         return this.pendingSearch
     }
-
     setPendingSearch(search: string) {
         this.pendingSearch = search
     }
@@ -21,14 +23,14 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
     const [searchQuery, setSearchQuery] = useState("")
     // array of song platformspecificids that are pending an update (e.g. adding to playlist)
     const [songsPendingUpdate, setSongsPendingUpdate] = useState<string[]>([])
+    const [pendingSearch] = useState(new PendingSearch())
 
     const { data: searchResults, refetch: updateSearchResults, isLoading: isSearchLoading } = trpc.searchTracks.useQuery({ searchQuery: searchQuery }, { enabled: false })
     const { mutateAsync: addSongToPlaylist } = trpc.addSongToPlaylist.useMutation({})
 
-    const [pendingSearch] = useState(new PendingSearch())
-
-    console.log(!isSearchLoading)
-
+    // whenever `searchQuery` changes, we don't refresh the results immediately.
+    // we wait a small period of time (<1sec) and check if the `searchQuery` has changed
+    // again (i.e. the user is typing faster than 1 character per time period).
     useEffect(() => {
         if (!isOpen) return
         if (searchQuery.trim().length <= 0) return
@@ -51,6 +53,9 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
         }
     ))
 
+    useConsoleLog(currentPlaylist)
+    useConsoleLog(searchResults)
+
     const addSongToPlaylistClicked = async (song: GenericTrack) => {
         if (!currentPlaylist) return
 
@@ -60,7 +65,7 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
             await addSongToPlaylist({
                 playlistId: currentPlaylist.id, song: {
                     platformSpecificId: song.platformSpecificId,
-                    // platform: platform
+                    platform: song.platform
                 }
             })
 
@@ -79,9 +84,7 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
             <ModalOverlay />
             <ModalContent mx="2">
                 <VStack mx="4" my="2" >
-                    {/* <HStack w="100%"> */}
                     <InputGroup>
-                        {/* <SearchIcon /> */}
                         <InputLeftElement
                             children={<SearchIcon />}
                         />
@@ -91,7 +94,6 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
                         />
                         <Input placeholder="Search for songs" variant="flushed" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value) }} />
                     </InputGroup>
-                    {/* </HStack> */}
                 </VStack>
                 <Divider />
                 <VStack py="2" maxH="66vh" overflow="scroll">

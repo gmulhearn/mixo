@@ -2,17 +2,18 @@ import { z } from "zod";
 import { procedure } from "../trpc";
 import { GenericTrack, TrackPlatform } from "./searchProcedures";
 import * as spotifyAPI from "../spotify/api"
+import * as youtubeAPI from "../youtube/api"
 import { ISong, PlaylistModel, SongModel } from "../mongo/models";
 
 const constructSongUri = (song: { platformSpecificId: string, platform: TrackPlatform }): string => {
-
     let platformMethod = ""
     switch (song.platform) {
         case TrackPlatform.Spotify:
             platformMethod = "spotify"
-            break;
+            break
         case TrackPlatform.Youtube:
             platformMethod = "youtube"
+            break
         default:
             throw new Error(`UNKNOWN PLATFORM USED: ${song.platform}`)
     }
@@ -53,7 +54,7 @@ export const addSongToPlaylistProcedure = procedure.input(
         playlistId: z.string(),
         song: z.object({
             platformSpecificId: z.string(),
-            // platform: z.nativeEnum(TrackPlatform) TODO - fix this - enum causes weird trpc client-server issue
+            platform: z.nativeEnum(TrackPlatform)
         })
     })
 ).mutation(async ({ input, ctx }): Promise<void> => {
@@ -64,7 +65,7 @@ export const addSongToPlaylistProcedure = procedure.input(
 
     const spotifyUser = await spotifyAPI.getMe(accessToken)
     const userId = spotifyUser.id
-    const songUri = constructSongUri({ platformSpecificId: input.song.platformSpecificId, platform: TrackPlatform.Spotify })
+    const songUri = constructSongUri({ platformSpecificId: input.song.platformSpecificId, platform: input.song.platform })
 
     const dbPlaylist = await PlaylistModel().findById(input.playlistId)
 
@@ -85,21 +86,32 @@ export const addSongToPlaylistProcedure = procedure.input(
     if (!existingSong) {
 
         let songTitle = ""
-        let songArtists = []
+        let songArtists: string[] = []
+        let covertArtUrl: string | undefined = undefined
 
-        // if (input.song.platform === TrackPlatform.Spotify) {
-        const spotifyTrack = await spotifyAPI.getTrackById(accessToken, input.song.platformSpecificId)
-        songTitle = spotifyTrack.name
-        songArtists = spotifyTrack.artists.map((artist) => artist.name)
-        // } else {
-        //     throw new Error(`Unable to resolve track of type: ${input.song.platform}`)
-        // }
+        if (input.song.platform === TrackPlatform.Spotify) {
+            const spotifyTrack = await spotifyAPI.getTrackById(accessToken, input.song.platformSpecificId)
+            songTitle = spotifyTrack.name
+            songArtists = spotifyTrack.artists.map((artist) => artist.name)
+            covertArtUrl = spotifyTrack.album.images.at(0)?.url
+        } else if (input.song.platform === TrackPlatform.Youtube) {
+            const youtubeVideos = await youtubeAPI.searchVideos(input.song.platformSpecificId)
+            const youtubeVideo = youtubeVideos.find((video) => (video.id == input.song.platformSpecificId))
+            if (!youtubeVideo) {
+                throw new Error(`Could not find youtube video with id: ${input.song.platformSpecificId}`)
+            }
+            songTitle = youtubeVideo.title
+            songArtists = [youtubeVideo.channelName]
+            covertArtUrl = youtubeVideo.thumbnailImageUrl
+        } else {
+            throw new Error(`Unable to resolve track of type: ${input.song.platform}`)
+        }
 
         const dbSong: ISong = {
             _id: songUri,
             title: songTitle,
             artists: songArtists,
-            coverArtUrl: spotifyTrack.album.images.at(0)?.url
+            coverArtUrl: covertArtUrl
         }
         await SongModel().insertMany(dbSong)
     }

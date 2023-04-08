@@ -5,12 +5,13 @@ const rfc3986EncodeURIComponent = (str: string) => encodeURIComponent(str).repla
 
 export async function searchVideos(searchQuery: string, limit?: number) {
   const YOUTUBE_URL = 'https://www.youtube.com';
+  const FORCE_NO_SUGGESTED_SEARCH_RESULTS_QUERY = "sp=QgIIAQ"
 
   const results = [];
   let details = [];
   let fetched = false;
 
-  const searchRes: any = await got.get(`${YOUTUBE_URL}/results?q=${rfc3986EncodeURIComponent(searchQuery.trim())}&hl=en`);
+  const searchRes: any = await got.get(`${YOUTUBE_URL}/results?q=${rfc3986EncodeURIComponent(searchQuery.trim())}&hl=en&${FORCE_NO_SUGGESTED_SEARCH_RESULTS_QUERY}`);
   let html = await searchRes.body;
   // try to parse html
   try {
@@ -21,11 +22,11 @@ export async function searchVideos(searchQuery: string, limit?: number) {
     });
     html = html.replaceAll("\\\\\"", "");
     html = JSON.parse(html)
-  } catch(e) { /* nothing */}
+  } catch (e) { /* nothing */ }
 
-  if(html && html.contents && html.contents.sectionListRenderer && html.contents.sectionListRenderer.contents
+  if (html && html.contents && html.contents.sectionListRenderer && html.contents.sectionListRenderer.contents
     && html.contents.sectionListRenderer.contents.length > 0 && html.contents.sectionListRenderer.contents[0].itemSectionRenderer &&
-    html.contents.sectionListRenderer.contents[0].itemSectionRenderer.contents.length > 0){
+    html.contents.sectionListRenderer.contents[0].itemSectionRenderer.contents.length > 0) {
     details = html.contents.sectionListRenderer.contents[0].itemSectionRenderer.contents;
     fetched = true;
   }
@@ -34,14 +35,13 @@ export async function searchVideos(searchQuery: string, limit?: number) {
     try {
       details = JSON.parse(html.split('{"itemSectionRenderer":{"contents":')[html.split('{"itemSectionRenderer":{"contents":').length - 1].split(',"continuations":[{')[0]);
       fetched = true;
-    } catch (e) { /* nothing */
-    }
+    } catch (e) { /* nothing */ }
   }
   if (!fetched) {
     try {
       details = JSON.parse(html.split('{"itemSectionRenderer":')[html.split('{"itemSectionRenderer":').length - 1].split('},{"continuationItemRenderer":{')[0]).contents;
       fetched = true;
-    } catch(e) { /* nothing */ }
+    } catch (e) { /* nothing */ }
   }
 
   if (!fetched) return [];

@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { procedure } from "../trpc";
 import * as spotifyAPI from '../spotify/api';
-import { PlaylistModel, SongModel } from "../mongo/models";
-import { GenericTrack } from "./searchProcedures";
-import { deconstructSongUri } from "./playlistSongManagementProcedures";
+import { PlaylistModel } from "../mongo/models";
 
 interface UserPlaylistMetadata {
     id: string,
@@ -39,7 +37,6 @@ export const newPlaylistProcedure = procedure
             id: dbPlaylist._id.toString(),
             name: dbPlaylist.name,
             createdEpochSecs: dbPlaylist.createdEpochSecs,
-            // songs: []
         }
 
         return newPlaylist

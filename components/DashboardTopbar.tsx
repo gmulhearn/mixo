@@ -49,7 +49,7 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
                 minW="100%"
                 justifyContent="center"
                 left="0"
-                >
+            >
                 mixo.
             </Text>
 
@@ -71,29 +71,31 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
                         mr="1"
                         icon={<SearchIcon />}
                     />
-                    <Menu>
-                        <MenuButton
-                            py={2}
-                            ml={4}
-                            transition="all 0.3s"
-                            _focus={{ boxShadow: 'none' }}>
-                            <HStack>
-                                <Avatar
-                                    size={'sm'}
-                                    src={userDetails?.imageUrl ?? DEFAULT_PROFILE_IMAGE_URL}
-                                />
-                                <Text fontSize="sm" display={{ base: 'none', md: 'flex' }}>{userDetails?.displayName}</Text>
-                                <Box display={{ base: 'none', md: 'flex' }}>
-                                    <FiChevronDown />
-                                </Box>
-                            </HStack>
-                        </MenuButton>
-                        <MenuList>
-                            <MenuItem>Settings</MenuItem>
-                            <MenuDivider />
-                            <MenuItem>Sign out</MenuItem>
-                        </MenuList>
-                    </Menu>
+                    {userDetails ? (
+                        <Menu>
+                            <MenuButton
+                                py={2}
+                                ml={4}
+                                transition="all 0.3s"
+                                _focus={{ boxShadow: 'none' }}>
+                                <HStack>
+                                    <Avatar
+                                        size={'sm'}
+                                        src={userDetails.imageUrl ?? DEFAULT_PROFILE_IMAGE_URL}
+                                    />
+                                    <Text fontSize="sm" display={{ base: 'none', md: 'flex' }}>{userDetails.displayName}</Text>
+                                    <Box display={{ base: 'none', md: 'flex' }}>
+                                        <FiChevronDown />
+                                    </Box>
+                                </HStack>
+                            </MenuButton>
+                            <MenuList>
+                                <MenuItem>Settings</MenuItem>
+                                <MenuDivider />
+                                <MenuItem>Sign out</MenuItem>
+                            </MenuList>
+                        </Menu>
+                    ) : null}
                 </Flex>
             </HStack>
         </Flex>

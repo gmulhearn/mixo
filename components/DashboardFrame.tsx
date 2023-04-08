@@ -10,23 +10,28 @@ export default function DashboardFrame({
     playlistsMetadata,
     onPlaylistItemClicked,
     currentPlaylist,
-    refreshCurrentPlaylist
+    refreshCurrentPlaylist,
+    refreshPlaylists,
+    
 }: {
     children: ReactNode;
     userDetails: { displayName: string, imageUrl?: string } | undefined,
-    playlistsMetadata: SidebarPlaylistMetadata[],
+    playlistsMetadata?: SidebarPlaylistMetadata[],
     onPlaylistItemClicked: (id: string) => void,
     currentPlaylist?: FullPlaylist,
-    refreshCurrentPlaylist: () => {}
+    refreshCurrentPlaylist: () => {},
+    refreshPlaylists: () => {},
 }) {
     const { isOpen, onOpen, onClose } = useDisclosure();
-    
+
     return (
         <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
             <DashboardPlaylistSidebar
                 onClose={() => onClose}
                 playlistsMetadata={playlistsMetadata}
                 onPlaylistItemClicked={onPlaylistItemClicked}
+                refreshPlaylists={refreshPlaylists}
+                currentPlaylistId={currentPlaylist?.id}
                 display={{ base: 'none', md: 'block' }}
             />
             <Drawer
@@ -38,7 +43,7 @@ export default function DashboardFrame({
                 onOverlayClick={onClose}
                 size="full">
                 <DrawerContent>
-                    <DashboardPlaylistSidebar onClose={onClose} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={onPlaylistItemClicked} />
+                    <DashboardPlaylistSidebar onClose={onClose} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={onPlaylistItemClicked} refreshPlaylists={refreshPlaylists} />
                 </DrawerContent>
             </Drawer>
             {/* mobilenav */}
