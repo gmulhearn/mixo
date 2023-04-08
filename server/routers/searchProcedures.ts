@@ -2,6 +2,8 @@ import { SpotifyTrackObject } from './../spotify/types';
 import { z } from "zod"
 import { procedure } from "../trpc"
 import * as spotifyAPI from "../spotify/api"
+import * as youtubeAPI from "../youtube/api"
+import { YoutubeVideoMetadata } from '../youtube/parser.service';
 
 // TODO better location
 export enum TrackPlatform {
@@ -29,6 +31,16 @@ const spotifyTrackToGeneric = (track: SpotifyTrackObject): GenericTrack => {
     }
 }
 
+const youtubeVideoToGeneric = (video: YoutubeVideoMetadata): GenericTrack => {
+    return {
+        platformSpecificId: video.id,
+        platform: TrackPlatform.Youtube,
+        title: video.title,
+        artists: [video.channelName],
+        coverArtImageUrl: video.thumbnailImageUrl
+    }
+}
+
 export const searchTracksProcedure = procedure
     .input(
         z.object({
@@ -41,9 +53,17 @@ export const searchTracksProcedure = procedure
             throw new Error("No auth token found in request")
         }
 
+        if (input.searchQuery.trim().length <= 0) return []
+
+        console.log("SEARCH PROCEDURE WITH: ", input.searchQuery)
+
+        const youtubeVideos = await youtubeAPI.searchVideos(input.searchQuery, 10)
         const spotifyTracks = await spotifyAPI.searchTracks(accessToken, input.searchQuery, 10, 0)
 
+        const youtubeGenericTracks = youtubeVideos.map(youtubeVideoToGeneric)
         const spotifyGenericTracks = spotifyTracks.map(spotifyTrackToGeneric)
 
-        return spotifyGenericTracks
+        const allTracks = spotifyGenericTracks.concat(youtubeGenericTracks)
+
+        return allTracks
     })

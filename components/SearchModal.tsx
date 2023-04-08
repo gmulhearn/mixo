@@ -1,18 +1,48 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import { AddIcon, CheckIcon, SearchIcon } from '@chakra-ui/icons'
-import { Box, Divider, HStack, IconButton, Image, Input, Modal, ModalContent, ModalOverlay, Spinner, Text, VStack } from '@chakra-ui/react'
-import React, { useState } from 'react'
+import { Box, Divider, HStack, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightElement, Modal, ModalContent, ModalOverlay, Spinner, Text, VStack } from '@chakra-ui/react'
+import React, { useEffect, useState } from 'react'
 import { DEFAULT_COVER_ART_IMAGE, FullPlaylist } from './PlaylistView'
+
+class PendingSearch {
+    pendingSearch: string = ""
+
+    getPendingSearch() {
+        return this.pendingSearch
+    }
+
+    setPendingSearch(search: string) {
+        this.pendingSearch = search
+    }
+}
 
 const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist }: { isOpen: boolean, onClose: () => void, currentPlaylist?: FullPlaylist, refreshCurrentPlaylist: () => {} }) => {
     const [searchQuery, setSearchQuery] = useState("")
     // array of song platformspecificids that are pending an update (e.g. adding to playlist)
     const [songsPendingUpdate, setSongsPendingUpdate] = useState<string[]>([])
 
-    const { data: searchResults } = trpc.searchTracks.useQuery({ searchQuery: searchQuery }, { enabled: isOpen })
+    const { data: searchResults, refetch: updateSearchResults, isLoading: isSearchLoading } = trpc.searchTracks.useQuery({ searchQuery: searchQuery }, { enabled: false })
     const { mutateAsync: addSongToPlaylist } = trpc.addSongToPlaylist.useMutation({})
 
+    const [pendingSearch] = useState(new PendingSearch())
+
+    console.log(!isSearchLoading)
+
+    useEffect(() => {
+        if (!isOpen) return
+        if (searchQuery.trim().length <= 0) return
+
+        pendingSearch.setPendingSearch(searchQuery.toString())
+
+        setTimeout(() => {
+            if (pendingSearch.getPendingSearch() !== searchQuery) {
+                return
+            }
+            updateSearchResults({})
+        }, 400)
+
+    }, [searchQuery])
 
     const songs = searchResults?.map((song) => (
         {
@@ -49,15 +79,24 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
             <ModalOverlay />
             <ModalContent mx="2">
                 <VStack mx="4" my="2" >
-                    <HStack w="100%">
-                        <SearchIcon />
+                    {/* <HStack w="100%"> */}
+                    <InputGroup>
+                        {/* <SearchIcon /> */}
+                        <InputLeftElement
+                            children={<SearchIcon />}
+                        />
+                        <InputRightElement
+                            hidden={!isSearchLoading || searchQuery.trim().length <= 0}
+                            children={<Spinner />}
+                        />
                         <Input placeholder="Search for songs" variant="flushed" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value) }} />
-                    </HStack>
+                    </InputGroup>
+                    {/* </HStack> */}
                 </VStack>
                 <Divider />
                 <VStack py="2" maxH="66vh" overflow="scroll">
                     {songs?.map((song) => (
-                        <HStack w="100%" px="4" justifyContent="space-between">
+                        <HStack w="100%" px="4" justifyContent="space-between" key={song.platformSpecificId}>
                             <HStack>
                                 <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
                                 <VStack alignItems="start">

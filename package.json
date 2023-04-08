@@ -25,6 +25,7 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "framer-motion": "^10.9.2",
+    "got": "^12.6.0",
     "js-cookie": "^3.0.1",
     "mongoose": "^7.0.3",
     "next": "13.2.4",
@@ -33,6 +34,7 @@
     "react-icons": "^4.8.0",
     "typescript": "5.0.2",
     "uuid": "^9.0.0",
+    "youtube-search-without-api-key": "^1.1.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {

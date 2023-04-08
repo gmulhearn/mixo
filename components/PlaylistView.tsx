@@ -1,6 +1,6 @@
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import { Box, Divider, Heading, HStack, Image, Text, VStack } from '@chakra-ui/react'
-import React from 'react'
+import React, { Fragment } from 'react'
 
 export const DEFAULT_COVER_ART_IMAGE = "TODO"
 
@@ -17,10 +17,10 @@ const PlaylistView = ({ playlist }: { playlist: FullPlaylist }) => {
             <Divider my="4" />
             <VStack mx="4">
                 {playlist.songs.map((song) => (
-                    <>
+                    <Fragment key={song.platformSpecificId}>
                         <SongItemView song={song} />
                         <Divider />
-                    </>
+                    </Fragment>
                 ))}
             </VStack>
         </Box>
