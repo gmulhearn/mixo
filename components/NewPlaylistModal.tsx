@@ -2,7 +2,7 @@ import { trpc } from '@/core/appTrpc'
 import { Button, Input, Modal, ModalContent, ModalOverlay, VStack } from '@chakra-ui/react'
 import React, { useState } from 'react'
 
-const NewPlaylistModal = ({ isOpen, onClose, refreshPlaylists }: { isOpen: boolean, onClose: () => void, refreshPlaylists: () => void }) => {
+const NewPlaylistModal = ({ isOpen, onClose, refreshPlaylists, setCurrentPlaylistId }: { isOpen: boolean, onClose: () => void, refreshPlaylists: () => void, setCurrentPlaylistId: (id?: string) => void }) => {
     const [newPlaylistInput, setNewPlaylistInput] = useState("")
     const [createLoading, setCreateLoading] = useState(false)
 
@@ -12,10 +12,11 @@ const NewPlaylistModal = ({ isOpen, onClose, refreshPlaylists }: { isOpen: boole
         if (newPlaylistInput.trim().length <= 0) return
         setCreateLoading(true)
         try {
-            await createNewPlaylist({ playlistName: newPlaylistInput })
+            const createdPlaylist = await createNewPlaylist({ playlistName: newPlaylistInput })
             refreshPlaylists()
-            onClose()
+            setCurrentPlaylistId(createdPlaylist.id)
             setNewPlaylistInput("")
+            onClose()
         } catch (e) { }
 
         setCreateLoading(false)

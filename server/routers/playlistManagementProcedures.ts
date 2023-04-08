@@ -67,3 +67,30 @@ export const listUserPlaylistsProcedure = procedure
 
         return playlists
     })
+
+export const deletePlaylistProcedure = procedure
+    .input(
+        z.object({
+            playlistId: z.string()
+        })
+    ).mutation(async ({ input, ctx }): Promise<void> => {
+        const accessToken = ctx.spotifyAuthToken
+        if (!accessToken) {
+            throw new Error("No auth token found in request")
+        }
+
+        const spotifyUser = await spotifyAPI.getMe(accessToken)
+        const userId = spotifyUser.id
+
+        const dbPlaylist = await PlaylistModel().findOne({ _id: input.playlistId })
+
+        if (!dbPlaylist) {
+            throw new Error(`No playlist found with ID: ${input.playlistId}`)
+        }
+
+        if (dbPlaylist.ownerId !== userId) {
+            throw new Error("Cannot delete playlists not owned by you")
+        }
+
+        await dbPlaylist.deleteOne()
+    })

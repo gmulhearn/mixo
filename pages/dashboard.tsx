@@ -45,7 +45,7 @@ const AuthorizedDashboard = () => {
     const currentPlaylist: FullPlaylist | undefined = currentFullPlaylistData
 
     return (
-        <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
+        <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
             {currentPlaylist ? (
                 <PlaylistView playlist={currentPlaylist} />
             ) : (

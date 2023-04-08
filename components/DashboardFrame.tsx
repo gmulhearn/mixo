@@ -8,7 +8,7 @@ export default function DashboardFrame({
     children,
     userDetails,
     playlistsMetadata,
-    onPlaylistItemClicked,
+    setCurrentPlaylistId,
     currentPlaylist,
     refreshCurrentPlaylist,
     refreshPlaylists,
@@ -17,7 +17,7 @@ export default function DashboardFrame({
     children: ReactNode;
     userDetails: { displayName: string, imageUrl?: string } | undefined,
     playlistsMetadata?: SidebarPlaylistMetadata[],
-    onPlaylistItemClicked: (id: string) => void,
+    setCurrentPlaylistId: (id?: string) => void,
     currentPlaylist?: FullPlaylist,
     refreshCurrentPlaylist: () => {},
     refreshPlaylists: () => {},
@@ -29,7 +29,7 @@ export default function DashboardFrame({
             <DashboardPlaylistSidebar
                 onClose={() => onClose}
                 playlistsMetadata={playlistsMetadata}
-                onPlaylistItemClicked={onPlaylistItemClicked}
+                setCurrentPlaylistId={setCurrentPlaylistId}
                 refreshPlaylists={refreshPlaylists}
                 currentPlaylistId={currentPlaylist?.id}
                 display={{ base: 'none', md: 'block' }}
@@ -43,7 +43,7 @@ export default function DashboardFrame({
                 onOverlayClick={onClose}
                 size="full">
                 <DrawerContent>
-                    <DashboardPlaylistSidebar onClose={onClose} playlistsMetadata={playlistsMetadata} onPlaylistItemClicked={onPlaylistItemClicked} refreshPlaylists={refreshPlaylists} />
+                    <DashboardPlaylistSidebar onClose={onClose} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} refreshPlaylists={refreshPlaylists} />
                 </DrawerContent>
             </Drawer>
             {/* mobilenav */}
