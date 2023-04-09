@@ -4,14 +4,19 @@ interface IPlaylist {
     ownerId: string,
     name: string,
     createdEpochSecs: number,
-    songUris: string[]
+    songs: { songUri: string, addedEpochMs: number }[]
 }
 
 const playlistSchema = new Schema<IPlaylist>({
     ownerId: { type: String, required: true, index: true },
     name: { type: String, required: true },
     createdEpochSecs: { type: Number, required: true },
-    songUris: { type: [String], required: true }
+    songs: {
+        type: [{
+            songUri: { type: String, required: true },
+            addedEpochMs: { type: Number, required: true }
+        }]
+    }
 })
 
 

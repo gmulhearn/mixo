@@ -77,7 +77,7 @@ export const addSongToPlaylistProcedure = procedure.input(
         throw new Error(`Cannot add song to playlist not owned by user: ${userId}`)
     }
 
-    if (dbPlaylist.songUris.find((uri) => uri == songUri)) {
+    if (dbPlaylist.songs.find((song) => song.songUri == songUri)) {
         throw new Error(`Song is already in the playlist: ${songUri}`)
     }
 
@@ -117,7 +117,8 @@ export const addSongToPlaylistProcedure = procedure.input(
     }
 
     // add songUri to playlist
-    dbPlaylist.songUris.push(songUri)
+    const currentEpochMs = Date.now()
+    dbPlaylist.songs.push({ songUri: songUri, addedEpochMs: currentEpochMs })
     await dbPlaylist.save()
 
     return
@@ -127,7 +128,7 @@ interface UserPlaylistFullDetails {
     id: string,
     name: string,
     createdEpochSecs: number,
-    songs: GenericTrack[]
+    songs: { song: GenericTrack, addedEpochMs: number }[]
 }
 
 export const getFullPlaylistByIdProcedure = procedure
@@ -141,15 +142,15 @@ export const getFullPlaylistByIdProcedure = procedure
             throw new Error(`Could not find playlist: ${input.playlistId}`)
         }
 
-        const songs: GenericTrack[] = []
-        await Promise.all(dbPlaylist.songUris.map(async (songUri) => {
-            const dbSong = await SongModel().findById(songUri)
+        const songs: { song: GenericTrack, addedEpochMs: number }[] = []
+        await Promise.all(dbPlaylist.songs.map(async (song) => {
+            const dbSong = await SongModel().findById(song.songUri)
 
             if (!dbSong) {
                 return
             }
 
-            const { platformSpecificId, platform } = deconstructSongUri(songUri)
+            const { platformSpecificId, platform } = deconstructSongUri(song.songUri)
 
             const genericTrack: GenericTrack = {
                 platformSpecificId,
@@ -159,7 +160,7 @@ export const getFullPlaylistByIdProcedure = procedure
                 coverArtImageUrl: dbSong.coverArtUrl
             }
 
-            songs.push(genericTrack)
+            songs.push({ song: genericTrack, addedEpochMs: song.addedEpochMs })
         }))
 
         return {

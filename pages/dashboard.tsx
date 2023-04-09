@@ -5,6 +5,8 @@ import Cookies from 'js-cookie'
 import DashboardFrame from '@/components/DashboardFrame'
 import { SidebarPlaylistMetadata } from '@/components/DashboardPlaylistSidebar'
 import PlaylistView, { FullPlaylist } from '@/components/PlaylistView'
+import PlayerFooter from '@/components/PlayerFooter'
+import { GenericTrack } from '@/server/routers/searchProcedures'
 
 const Dashboard = () => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | undefined>(undefined)
@@ -32,8 +34,10 @@ const AuthorizedDashboard = () => {
         if (!currentPlaylistId) return
         localStorage.setItem("MIXO_CURRENT_PLAYLIST_ID", currentPlaylistId)
     }, [currentPlaylistId])
+    const [currentSong, setCurrentSong] = useState<GenericTrack | undefined>(undefined)
 
-    const { data: spotifyUserDetails } = trpc.spotifyMe.useQuery({})
+    const { data: spotifyUserDetails } = trpc.spotifyMe.useQuery()
+    const { data: currentSpotifyAccessToken } = trpc.getAccessToken.useQuery()
     const { data: playlists, refetch: getPlaylists } = trpc.listPlaylists.useQuery({})
     const { data: currentFullPlaylistData, refetch: refetchCurrentPlaylist } = trpc.getFullPlaylistById.useQuery({ playlistId: currentPlaylistId ?? "" }, { enabled: currentPlaylistId != undefined })
 
@@ -45,21 +49,28 @@ const AuthorizedDashboard = () => {
     const currentPlaylist: FullPlaylist | undefined = currentFullPlaylistData
 
     return (
-        <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
-            {currentPlaylist ? (
-                <PlaylistView playlist={currentPlaylist} />
-            ) : (
-                currentPlaylistId ? (
-                    <Center mt="8">
-                        <Spinner />
-                    </Center>
+        <>
+            <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
+                {currentPlaylist ? (
+                    <PlaylistView playlist={currentPlaylist} playSong={(song) => { setCurrentSong(song) }} />
                 ) : (
-                    <>
-                        Select a playlist..
-                    </>
-                )
+                    currentPlaylistId ? (
+                        <Center mt="8">
+                            <Spinner />
+                        </Center>
+                    ) : (
+                        <>
+                            Select a playlist..
+                        </>
+                    )
+                )}
+            </DashboardFrame>
+            {currentSpotifyAccessToken ? (
+                <PlayerFooter spotifyAccessToken={currentSpotifyAccessToken} currentSong={currentSong} />
+            ) : (
+                <></>
             )}
-        </DashboardFrame>
+        </>
     )
 }
 

@@ -27,7 +27,7 @@ export default async function handler(
 
     // TODO - consider refresh: https://indepth.dev/posts/1382/localstorage-vs-cookies
 
-    const spotifyAuthTokenExpiresEpoch = Date.now() + Number(expiresIn)
+    const spotifyAuthTokenExpiresEpoch = Math.round(Date.now() / 1000) + Number(expiresIn)
     res.setHeader('Set-Cookie', [
         serialize("SPOTIFY_AUTH_TOKEN", accessToken, { httpOnly: true, path: "/", maxAge: Number(expiresIn) }),
         // set auth token expires as a marker for the front end to use for being aware of when their token will expire

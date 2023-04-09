@@ -48,7 +48,7 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
 
     const songs = searchResults?.map((song) => (
         {
-            alreadyAdded: currentPlaylist?.songs.find((s) => s.platformSpecificId === song.platformSpecificId && s.platform === song.platform) != undefined,
+            alreadyAdded: currentPlaylist?.songs.find((s) => s.song.platformSpecificId === song.platformSpecificId && s.song.platform === song.platform) != undefined,
             ...song
         }
     ))

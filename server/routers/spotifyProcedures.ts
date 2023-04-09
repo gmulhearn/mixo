@@ -3,10 +3,6 @@ import * as spotifyAPI from '../spotify/api';
 import { procedure } from '../trpc';
 
 export const meProcedure = procedure
-    .input(
-        z.object({
-        }),
-    )
     .query(async ({ input, ctx }) => {
         const accessToken = ctx.spotifyAuthToken
         if (!accessToken) {
@@ -17,3 +13,8 @@ export const meProcedure = procedure
 
         return res;
     })
+
+// TODO - long term we want to remove this.. ideally the client should not have access to their access token
+export const getAccessTokenProcedure = procedure.query(({ ctx }) => {
+    return ctx.spotifyAuthToken
+})
