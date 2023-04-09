@@ -54,10 +54,9 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
             </Text>
 
             <InputGroup display={{ base: 'none', md: 'flex' }} maxW="30em" cursor="text" onClick={onSearchOpen}>
-                <InputLeftElement
-                    pointerEvents='none'
-                    children={<SearchIcon />}
-                />
+                <InputLeftElement pointerEvents='none'>
+                    <SearchIcon />
+                </InputLeftElement>
                 <Input placeholder="Search for songs" tabIndex={-1} style={{ pointerEvents: "none" }} />
             </InputGroup>
 

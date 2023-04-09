@@ -136,7 +136,7 @@ const DeleteConfirmationPlaylistModal = ({ playlistId, onClose, refreshPlaylists
             <ModalContent mx="2">
                 <VStack mx="4" my="4" spacing="4">
                     <Text>Are you sure want to delete this playlist?</Text>
-                    <Button w="100%" isLoading={deleteLoading} bg="cyan.400" _hover={{ bg: "cyan-400" }} onClick={deletePlaylistClicked}>I'm sure!</Button>
+                    <Button w="100%" isLoading={deleteLoading} bg="cyan.400" _hover={{ bg: "cyan-400" }} onClick={deletePlaylistClicked}>I&apos;m sure!</Button>
                 </VStack>
             </ModalContent>
         </Modal>

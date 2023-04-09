@@ -80,9 +80,8 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
                 </div>
             ) : null}
 
-
             <HStack>
-                <Image src={currentSong.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
+                <Image src={currentSong.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" alt="cover art" />
                 <VStack alignItems="start">
                     <Text fontWeight="bold" noOfLines={1}>{currentSong.title}</Text>
                     <Text color="gray.400" noOfLines={1}>{currentSong.artists.join(", ")}</Text>

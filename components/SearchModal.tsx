@@ -81,13 +81,13 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
             <ModalContent mx="2">
                 <VStack mx="4" my="2" >
                     <InputGroup>
-                        <InputLeftElement
-                            children={<SearchIcon />}
-                        />
+                        <InputLeftElement>
+                            <SearchIcon />
+                        </InputLeftElement>
                         <InputRightElement
-                            hidden={!isSearchLoading || searchQuery.trim().length <= 0}
-                            children={<Spinner />}
-                        />
+                            hidden={!isSearchLoading || searchQuery.trim().length <= 0}>
+                            <Spinner />
+                        </InputRightElement>
                         <Input placeholder="Search for songs" variant="flushed" value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value) }} />
                     </InputGroup>
                 </VStack>
@@ -96,7 +96,7 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
                     {songs?.map((song) => (
                         <HStack w="100%" px="4" justifyContent="space-between" key={song.platformSpecificId}>
                             <HStack>
-                                <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
+                                <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" alt="cover art" />
                                 <VStack alignItems="start">
                                     <Text fontWeight="bold" noOfLines={1}>{song.title}</Text>
                                     <Text color="gray.400" noOfLines={1}>{song.artists.join(", ")}</Text>

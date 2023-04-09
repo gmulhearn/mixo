@@ -44,7 +44,7 @@ const SongItemView = ({ song, playSong, isCurrentlyPlaying }: { song: GenericTra
                             icon={<FaPlay />}
                         />
                     </Flex>
-                    <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
+                    <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" alt="cover art" />
                 </Box>
                 <VStack alignItems="start">
                     <Text fontWeight="bold" noOfLines={1} color={isCurrentlyPlaying ? "cyan.300" : "white"}>{song.title}</Text>
