@@ -56,12 +56,12 @@ const AuthorizedDashboard = () => {
     const playSong = (song: GenericTrack, indexInPlaylist?: number) => {
         setCurrentSong(song)
 
-        if (!indexInPlaylist) return
+        if (indexInPlaylist === undefined) return
         setPlayingIndexInPlaylist(indexInPlaylist)
     }
 
     const playNextSong = () => {
-        if (!currentPlaylist || !playingIndexInPlaylist) return
+        if (!currentPlaylist || playingIndexInPlaylist === undefined) return
 
         const nextIndex = (playingIndexInPlaylist + 1) % currentPlaylist.songs.length
         const nextSong = currentPlaylist.songs.at(nextIndex)?.song
@@ -73,7 +73,7 @@ const AuthorizedDashboard = () => {
     }
 
     const playPreviousSong = () => {
-        if (!currentPlaylist || playingIndexInPlaylist == undefined) return
+        if (!currentPlaylist || playingIndexInPlaylist === undefined) return
 
         const prevIndex = playingIndexInPlaylist - 1
         const adjustedPrevIndex = prevIndex < 0 ? currentPlaylist.songs.length + prevIndex : prevIndex

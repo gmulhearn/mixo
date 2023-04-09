@@ -45,6 +45,10 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
         setIsPlaying(!isPlaying)
     }
 
+    if (!currentSong) {
+        return null
+    }
+
     return (
         <HStack position="fixed" w="100%" bottom="0"
             p="2"
@@ -53,7 +57,7 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
             borderTopColor={useColorModeValue('gray.200', 'gray.700')}
             minH="5.5em"
         >
-            {currentSong?.platform.valueOf() == 1 ? ( // TODO - do not use numbers!
+            {currentSong.platform.valueOf() == 1 ? ( // TODO - do not use numbers!
                 <YouTube
                     videoId={currentSong.platformSpecificId}
                     opts={YOUTUBE_PLAYER_OPTS}
@@ -64,7 +68,7 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
                 />
             ) : null}
 
-            {currentSong?.platform.valueOf() == 0 ? ( // TODO - do not use numbers!
+            {currentSong.platform.valueOf() == 0 ? ( // TODO - do not use numbers!
                 <div style={{ display: "none" }}>
                     <SpotifyPlayer
                         token={spotifyAccessToken}
@@ -76,37 +80,34 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
                 </div>
             ) : null}
 
-            {currentSong ? (
-                <>
-                    <HStack>
-                        <Image src={currentSong.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
-                        <VStack alignItems="start">
-                            <Text fontWeight="bold" noOfLines={1}>{currentSong.title}</Text>
-                            <Text color="gray.400" noOfLines={1}>{currentSong.artists.join(", ")}</Text>
-                        </VStack>
-                    </HStack>
-                    <HStack position="absolute" justifyContent="center" w="100%">
-                        <IconButton
-                            variant="ghost"
-                            aria-label="previous song"
-                            onClick={playPreviousSong}
-                            icon={<FaStepBackward />}
-                        />
-                        <IconButton
-                            variant="ghost"
-                            aria-label="pause song"
-                            onClick={handlePlayButtonClicked}
-                            icon={isPlaying ? <FaPause /> : <FaPlay />}
-                        />
-                        <IconButton
-                            variant="ghost"
-                            aria-label="next song"
-                            onClick={playNextSong}
-                            icon={<FaStepForward />}
-                        />
-                    </HStack>
-                </>
-            ) : null}
+
+            <HStack>
+                <Image src={currentSong.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" />
+                <VStack alignItems="start">
+                    <Text fontWeight="bold" noOfLines={1}>{currentSong.title}</Text>
+                    <Text color="gray.400" noOfLines={1}>{currentSong.artists.join(", ")}</Text>
+                </VStack>
+            </HStack>
+            <HStack position="absolute" justifyContent="center" w="100%">
+                <IconButton
+                    variant="ghost"
+                    aria-label="previous song"
+                    onClick={playPreviousSong}
+                    icon={<FaStepBackward />}
+                />
+                <IconButton
+                    variant="ghost"
+                    aria-label="pause song"
+                    onClick={handlePlayButtonClicked}
+                    icon={isPlaying ? <FaPause /> : <FaPlay />}
+                />
+                <IconButton
+                    variant="ghost"
+                    aria-label="next song"
+                    onClick={playNextSong}
+                    icon={<FaStepForward />}
+                />
+            </HStack>
         </HStack>
     )
 }

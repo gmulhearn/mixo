@@ -1,6 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { serialize } from 'cookie';
+import { getBaseUrl } from '@/core/appTrpc';
 
 export default async function handler(
     req: NextApiRequest,
@@ -15,8 +16,10 @@ export default async function handler(
 
     let formData = new URLSearchParams()
     formData.append("code", code as string) // TODO - as string silliness
-    formData.append("redirect_uri", "http://localhost:3000/api/spotify/callback")
+    formData.append("redirect_uri", `${getBaseUrl()}/api/spotify/callback`)
     formData.append("grant_type", 'authorization_code')
+
+    console.log(formData)
 
     let client_id = process.env.SPOTIFY_CLIENT_ID
     let client_secret = process.env.SPOTIFY_CLIENT_SECRET
@@ -41,5 +44,5 @@ export default async function handler(
         serialize("SPOTIFY_REFRESH_TOKEN", refreshToken, { httpOnly: true, path: "/" })
     ])
 
-    res.redirect("http://localhost:3000/dashboard")
+    res.redirect(`${getBaseUrl()}/dashboard`)
 }

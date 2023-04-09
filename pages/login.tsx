@@ -1,6 +1,7 @@
 import { getSpotifyAuthUrl } from '@/core/spotifyAPI'
-import { Button, Flex, Link } from '@chakra-ui/react'
+import { Button, Flex, HStack, Link, Text } from '@chakra-ui/react'
 import React from 'react'
+import { FaSpotify } from 'react-icons/fa'
 
 const Login = () => {
     return (
@@ -9,7 +10,10 @@ const Login = () => {
                 <Button _hover={{
                     bg: 'cyan.400'
                 }} color="white" fontWeight="bold">
-                    login
+                    <HStack>
+                        <FaSpotify />
+                        <Text>Login with Spotify</Text>
+                    </HStack>
                 </Button>
             </Link>
         </Flex >

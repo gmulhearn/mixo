@@ -1,11 +1,12 @@
 import { useState } from "react"
+import { getBaseUrl } from "./appTrpc"
 
 const BASE_SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 export const getSpotifyAuthUrl = (): string => {
     let authUrl = new URL(BASE_SPOTIFY_AUTH_URL)
     authUrl.searchParams.append("response_type", "code")
     authUrl.searchParams.append("client_id", "24ef7853deb14c51bd6f72e440f35fc1")
-    authUrl.searchParams.append("redirect_uri", "http://localhost:3000/api/spotify/callback")
+    authUrl.searchParams.append("redirect_uri", `${getBaseUrl()}/api/spotify/callback`)
     authUrl.searchParams.append("scope", "streaming user-read-email user-read-private user-library-read user-read-playback-state user-modify-playback-state")
 
     return authUrl.toString()
