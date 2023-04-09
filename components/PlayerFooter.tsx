@@ -23,6 +23,9 @@ interface YoutubePlayerTarget {
 }
 
 const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPreviousSong }: { spotifyAccessToken: string, currentSong?: GenericTrack, playNextSong: () => void, playPreviousSong: () => void }) => {
+    const footerBgColor = useColorModeValue('white', 'gray.900')
+    const footerBorderColor = useColorModeValue('gray.200', 'gray.700')
+
     const [isPlaying, setIsPlaying] = useState(false);
 
     const [youtubePlayerTarget, setYoutubePlayerTarget] = useState<YoutubePlayerTarget | undefined>(undefined)
@@ -52,9 +55,9 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
     return (
         <HStack position="fixed" w="100%" bottom="0"
             p="2"
-            bg={useColorModeValue('white', 'gray.900')}
+            bg={footerBgColor}
             borderTop="1px"
-            borderTopColor={useColorModeValue('gray.200', 'gray.700')}
+            borderTopColor={footerBorderColor}
             minH="5.5em"
         >
             {currentSong.platform.valueOf() == 1 ? ( // TODO - do not use numbers!

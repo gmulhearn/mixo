@@ -19,8 +19,8 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
 
     return (
         <Flex
-            ml={{ base: 0, md: 60 }}
-            px={{ base: 4, md: 4 }}
+            ml={{ base: '0', md: '60' }}
+            px={4}
             height="20"
             alignItems="center"
             bg={useColorModeValue('white', 'gray.900')}
