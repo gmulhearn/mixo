@@ -35,6 +35,7 @@ const AuthorizedDashboard = () => {
         localStorage.setItem("MIXO_CURRENT_PLAYLIST_ID", currentPlaylistId)
     }, [currentPlaylistId])
     const [currentSong, setCurrentSong] = useState<GenericTrack | undefined>(undefined)
+    const [playingIndexInPlaylist, setPlayingIndexInPlaylist] = useState<number | undefined>(undefined)
 
     const { data: spotifyUserDetails } = trpc.spotifyMe.useQuery()
     const { data: currentSpotifyAccessToken } = trpc.getAccessToken.useQuery()
@@ -46,13 +47,49 @@ const AuthorizedDashboard = () => {
         imageUrl: spotifyUserDetails.images.at(0)?.url
     } : undefined
     const playlistsMetadata: SidebarPlaylistMetadata[] | undefined = playlists
-    const currentPlaylist: FullPlaylist | undefined = currentFullPlaylistData
+    const currentPlaylist: FullPlaylist | undefined = currentFullPlaylistData ? {
+        id: currentFullPlaylistData.id,
+        name: currentFullPlaylistData.name,
+        songs: currentFullPlaylistData.songs.sort((a, b) => (a.addedEpochMs - b.addedEpochMs))
+    } : undefined
+
+    const playSong = (song: GenericTrack, indexInPlaylist?: number) => {
+        setCurrentSong(song)
+
+        if (!indexInPlaylist) return
+        setPlayingIndexInPlaylist(indexInPlaylist)
+    }
+
+    const playNextSong = () => {
+        if (!currentPlaylist || !playingIndexInPlaylist) return
+
+        const nextIndex = (playingIndexInPlaylist + 1) % currentPlaylist.songs.length
+        const nextSong = currentPlaylist.songs.at(nextIndex)?.song
+
+        if (!nextSong) return
+
+        setPlayingIndexInPlaylist(nextIndex)
+        setCurrentSong(nextSong)
+    }
+
+    const playPreviousSong = () => {
+        if (!currentPlaylist || playingIndexInPlaylist == undefined) return
+
+        const prevIndex = playingIndexInPlaylist - 1
+        const adjustedPrevIndex = prevIndex < 0 ? currentPlaylist.songs.length + prevIndex : prevIndex
+        const prevSong = currentPlaylist.songs.at(adjustedPrevIndex)?.song
+
+        if (!prevSong) return
+
+        setPlayingIndexInPlaylist(adjustedPrevIndex)
+        setCurrentSong(prevSong)
+    }
 
     return (
         <>
             <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
                 {currentPlaylist ? (
-                    <PlaylistView playlist={currentPlaylist} playSong={(song) => { setCurrentSong(song) }} />
+                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} />
                 ) : (
                     currentPlaylistId ? (
                         <Center mt="8">
@@ -66,7 +103,7 @@ const AuthorizedDashboard = () => {
                 )}
             </DashboardFrame>
             {currentSpotifyAccessToken ? (
-                <PlayerFooter spotifyAccessToken={currentSpotifyAccessToken} currentSong={currentSong} />
+                <PlayerFooter spotifyAccessToken={currentSpotifyAccessToken} currentSong={currentSong} playNextSong={playNextSong} playPreviousSong={playPreviousSong} />
             ) : (
                 <></>
             )}

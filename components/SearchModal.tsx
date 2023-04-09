@@ -1,6 +1,5 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
-import { useConsoleLog } from '@/utils/useConsoleLog'
 import { AddIcon, CheckIcon, SearchIcon } from '@chakra-ui/icons'
 import { Box, Divider, HStack, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightElement, Modal, ModalContent, ModalOverlay, Spinner, Text, VStack } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
@@ -52,9 +51,6 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
             ...song
         }
     ))
-
-    useConsoleLog(currentPlaylist)
-    useConsoleLog(searchResults)
 
     const addSongToPlaylistClicked = async (song: GenericTrack) => {
         if (!currentPlaylist) return

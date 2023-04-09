@@ -7,8 +7,8 @@ import { YoutubeVideoMetadata } from '../youtube/parser.service';
 
 // TODO better location
 export enum TrackPlatform {
-    Spotify,
-    Youtube
+    Spotify = 0,
+    Youtube = 1
 }
 
 // uniquely identified by platformId + platform
