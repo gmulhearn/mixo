@@ -4,8 +4,8 @@ import type { AppRouter } from '../server/routers/_app';
 
 export function getBaseUrl(): string {
     if (typeof window !== 'undefined') {
-        // browser should use relative path
-        return ''
+        // browser should use window location
+        return window.location.origin
     }
     if (process.env.BASE_APP_URL) {
         // manually defined base app url
