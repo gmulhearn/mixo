@@ -7,6 +7,7 @@ import { SidebarPlaylistMetadata } from '@/components/DashboardPlaylistSidebar'
 import PlaylistView, { FullPlaylist } from '@/components/PlaylistView'
 import PlayerFooter from '@/components/PlayerFooter'
 import { GenericTrack } from '@/server/routers/searchProcedures'
+import Head from 'next/head'
 
 const Dashboard = () => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | undefined>(undefined)
@@ -87,6 +88,12 @@ const AuthorizedDashboard = () => {
 
     return (
         <>
+            <Head>
+                <title>Mixo - Dashboard</title>
+                <meta name="description" content="Mixo streamer" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
             <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
                 {currentPlaylist ? (
                     <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} />

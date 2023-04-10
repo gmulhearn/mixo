@@ -19,8 +19,6 @@ export default async function handler(
     formData.append("redirect_uri", `${getBaseUrl()}/api/spotify/callback`)
     formData.append("grant_type", 'authorization_code')
 
-    console.log(formData)
-
     let client_id = process.env.SPOTIFY_CLIENT_ID
     let client_secret = process.env.SPOTIFY_CLIENT_SECRET
 
