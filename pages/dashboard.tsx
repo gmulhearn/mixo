@@ -96,7 +96,7 @@ const AuthorizedDashboard = () => {
             </Head>
             <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
                 {currentPlaylist ? (
-                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} />
+                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} />
                 ) : (
                     currentPlaylistId ? (
                         <Center mt="8">

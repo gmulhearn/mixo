@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { Box, CloseButton, Flex, useColorModeValue, Text, BoxProps, FlexProps, Divider, useDisclosure, Center, Spinner, IconButton, Modal, ModalOverlay, ModalContent, VStack, Button } from '@chakra-ui/react';
+import { Box, CloseButton, Flex, useColorModeValue, Text, BoxProps, FlexProps, Divider, useDisclosure, Center, Spinner, IconButton, Modal, ModalOverlay, ModalContent, VStack, Button, Tooltip } from '@chakra-ui/react';
 import NewPlaylistModal from './NewPlaylistModal';
 import { CloseIcon } from '@chakra-ui/icons';
 import { trpc } from '@/core/appTrpc';
@@ -61,17 +61,19 @@ export const DashboardPlaylistSidebar = ({ onClose, playlistsMetadata, setCurren
                             {playlist.name}
                         </Text>
                         {hoveredPlaylistId === playlist.id ? (
-                            <IconButton
-                                variant="unstyled"
-                                px="1"
-                                minW="0" h="100%"
-                                aria-label="delete playlist"
-                                onClick={(e) => {
-                                    e.stopPropagation()
-                                    setDeletingPlaylistId(playlist.id)
-                                }}
-                                icon={<CloseIcon fontSize="xs" />}
-                            />
+                            <Tooltip label="Delete" openDelay={250}>
+                                <IconButton
+                                    variant="unstyled"
+                                    px="1"
+                                    minW="0" h="100%"
+                                    aria-label="delete playlist"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        setDeletingPlaylistId(playlist.id)
+                                    }}
+                                    icon={<CloseIcon fontSize="xs" />}
+                                />
+                            </Tooltip>
                         ) : (<></>)}
 
                     </Flex>

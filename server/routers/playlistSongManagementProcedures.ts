@@ -124,6 +124,42 @@ export const addSongToPlaylistProcedure = procedure.input(
     return
 })
 
+export const removeSongFromPlaylistProcedure = procedure.input(
+    z.object({
+        playlistId: z.string(),
+        song: z.object({
+            platformSpecificId: z.string(),
+            platform: z.nativeEnum(TrackPlatform)
+        })
+    })
+).mutation(async ({ input, ctx }): Promise<void> => {
+    const accessToken = ctx.spotifyAuthToken
+    if (!accessToken) {
+        throw new Error("No auth token found in request")
+    }
+
+    const spotifyUser = await spotifyAPI.getMe(accessToken)
+    const userId = spotifyUser.id
+
+    const songUriToDelete = constructSongUri({ platformSpecificId: input.song.platformSpecificId, platform: input.song.platform })
+
+    const dbPlaylist = await PlaylistModel().findById(input.playlistId)
+
+    if (dbPlaylist == undefined) {
+        throw new Error(`Could not find playlist: ${input.playlistId}`)
+    }
+
+    if (dbPlaylist.ownerId !== userId) {
+        throw new Error(`Cannot add song to playlist not owned by user: ${userId}`)
+    }
+
+    dbPlaylist.songs = dbPlaylist.songs.filter(({ songUri }) => songUri !== songUriToDelete)
+
+    await dbPlaylist.save()
+
+    return
+})
+
 interface UserPlaylistFullDetails {
     id: string,
     name: string,

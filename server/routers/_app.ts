@@ -1,4 +1,4 @@
-import { addSongToPlaylistProcedure, getFullPlaylistByIdProcedure } from './playlistSongManagementProcedures';
+import { addSongToPlaylistProcedure, getFullPlaylistByIdProcedure, removeSongFromPlaylistProcedure } from './playlistSongManagementProcedures';
 import { router } from '../trpc';
 import { deletePlaylistProcedure, listUserPlaylistsProcedure, newPlaylistProcedure } from './playlistManagementProcedures';
 import { searchTracksProcedure } from './searchProcedures';
@@ -12,6 +12,7 @@ export const appRouter = router({
     listPlaylists: listUserPlaylistsProcedure,
     deletePlaylist: deletePlaylistProcedure,
     addSongToPlaylist: addSongToPlaylistProcedure,
+    removeSongFromPlaylist: removeSongFromPlaylistProcedure,
     getFullPlaylistById: getFullPlaylistByIdProcedure,
 });
 // export type definition of API
