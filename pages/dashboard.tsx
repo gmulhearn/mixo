@@ -8,6 +8,7 @@ import PlaylistView, { FullPlaylist } from '@/components/PlaylistView'
 import PlayerFooter from '@/components/PlayerFooter'
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import Head from 'next/head'
+import { useConsoleLog } from '@/utils/useConsoleLog'
 
 const Dashboard = () => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | undefined>(undefined)
@@ -36,7 +37,14 @@ const AuthorizedDashboard = () => {
         localStorage.setItem("MIXO_CURRENT_PLAYLIST_ID", currentPlaylistId)
     }, [currentPlaylistId])
     const [currentSong, setCurrentSong] = useState<GenericTrack | undefined>(undefined)
-    const [playingIndexInPlaylist, setPlayingIndexInPlaylist] = useState<number | undefined>(undefined)
+    // where regularIndex is the unshuffled-index
+    const [currentQueue, setCurrentQueue] = useState<{ track: GenericTrack, regularIndex: number }[] | undefined>(undefined)
+    const [playingIndexInQueue, setPlayingIndexInQueue] = useState<number | undefined>(undefined)
+    const [repeatEnabled, setRepeatEnabled] = useState(true)
+    const [shuffleEnabled, setShuffleEnabled] = useState(false)
+
+    useConsoleLog(playingIndexInQueue)
+    useConsoleLog(currentQueue)
 
     const { data: spotifyUserDetails } = trpc.spotifyMe.useQuery()
     const { data: currentSpotifyAccessToken } = trpc.getAccessToken.useQuery()
@@ -57,33 +65,97 @@ const AuthorizedDashboard = () => {
     const playSong = (song: GenericTrack, indexInPlaylist?: number) => {
         setCurrentSong(song)
 
-        if (indexInPlaylist === undefined) return
-        setPlayingIndexInPlaylist(indexInPlaylist)
+        if (!currentPlaylist || indexInPlaylist === undefined) return
+        let playlistSongs = currentPlaylist.songs
+
+        let sortedQueue = playlistSongs.map(({ song }, i) => ({ track: song, regularIndex: i }))
+        if (shuffleEnabled) {
+            // remove current song
+            let newQueue = sortedQueue.slice()
+            newQueue.splice(indexInPlaylist, 1)
+
+            // shuffle songs
+            let newShuffledQueue = shuffleArray(newQueue)
+
+            // add back our original song to start of queue
+            newShuffledQueue.unshift({ track: song, regularIndex: indexInPlaylist })
+
+            // set queue, where we are currently in position 0!
+            setCurrentQueue(newShuffledQueue)
+            setPlayingIndexInQueue(0)
+        } else {
+            setCurrentQueue(sortedQueue)
+            setPlayingIndexInQueue(indexInPlaylist)
+        }
     }
 
     const playNextSong = () => {
-        if (!currentPlaylist || playingIndexInPlaylist === undefined) return
+        if (!currentQueue || playingIndexInQueue === undefined) return
 
-        const nextIndex = (playingIndexInPlaylist + 1) % currentPlaylist.songs.length
-        const nextSong = currentPlaylist.songs.at(nextIndex)?.song
+        const nextIndex = (playingIndexInQueue + 1) % currentQueue.length
+        // if next index is to restart the queue and repeat is disabled, escape
+        if (nextIndex == 0 && !repeatEnabled) {
+            setCurrentSong(undefined)
+            setPlayingIndexInQueue(undefined)
+            return
+        }
+        const nextSong = currentQueue.at(nextIndex)
 
-        if (!nextSong) return
+        if (!nextSong) return // impossible
 
-        setPlayingIndexInPlaylist(nextIndex)
-        setCurrentSong(nextSong)
+        setPlayingIndexInQueue(nextIndex)
+        setCurrentSong(nextSong.track)
     }
 
     const playPreviousSong = () => {
-        if (!currentPlaylist || playingIndexInPlaylist === undefined) return
+        if (!currentQueue || playingIndexInQueue === undefined) return
 
-        const prevIndex = playingIndexInPlaylist - 1
-        const adjustedPrevIndex = prevIndex < 0 ? currentPlaylist.songs.length + prevIndex : prevIndex
-        const prevSong = currentPlaylist.songs.at(adjustedPrevIndex)?.song
+        const prevIndex = playingIndexInQueue - 1
+        const adjustedPrevIndex = prevIndex < 0 ? currentQueue.length + prevIndex : prevIndex
+        const prevSong = currentQueue.at(adjustedPrevIndex)
 
-        if (!prevSong) return
+        if (!prevSong) return // impossible
 
-        setPlayingIndexInPlaylist(adjustedPrevIndex)
-        setCurrentSong(prevSong)
+        setPlayingIndexInQueue(adjustedPrevIndex)
+        setCurrentSong(prevSong.track)
+    }
+
+    const toggleRepeatEnabled = () => {
+        setRepeatEnabled((prev) => !prev)
+    }
+
+    const toggleShuffleEnabled = () => {
+        if (!currentQueue || playingIndexInQueue === undefined) return
+
+        if (shuffleEnabled) {
+            // find current song
+            let currentQueueSong = currentQueue[playingIndexInQueue]
+            let currentSongNormalIndex = currentQueueSong.regularIndex
+
+            // sort songs
+            let sortedQueue = currentQueue.sort((a, b) => a.regularIndex - b.regularIndex)
+            setCurrentQueue(sortedQueue)
+            // fix index
+            setPlayingIndexInQueue(currentSongNormalIndex)
+        } else {
+            // remember current song's regular index
+            let currentQueueSong = currentQueue[playingIndexInQueue]
+
+            // remove current song
+            let newQueue = currentQueue.slice()
+            newQueue.splice(playingIndexInQueue, 1)
+
+            // shuffle songs
+            let newShuffledQueue = shuffleArray(newQueue)
+
+            // add back our original song to start of queue
+            newShuffledQueue.unshift(currentQueueSong)
+
+            // set queue, where we are currently in position 0!
+            setCurrentQueue(newShuffledQueue)
+            setPlayingIndexInQueue(0)
+        }
+        setShuffleEnabled((prev) => !prev)
     }
 
     return (
@@ -110,7 +182,16 @@ const AuthorizedDashboard = () => {
                 )}
             </DashboardFrame>
             {currentSpotifyAccessToken ? (
-                <PlayerFooter spotifyAccessToken={currentSpotifyAccessToken} currentSong={currentSong} playNextSong={playNextSong} playPreviousSong={playPreviousSong} />
+                <PlayerFooter
+                    spotifyAccessToken={currentSpotifyAccessToken}
+                    currentSong={currentSong}
+                    playNextSong={playNextSong}
+                    playPreviousSong={playPreviousSong}
+                    repeatEnabled={repeatEnabled}
+                    shuffleEnabled={shuffleEnabled}
+                    toggleRepeatEnabled={toggleRepeatEnabled}
+                    toggleShuffleEnabled={toggleShuffleEnabled}
+                />
             ) : (
                 <></>
             )}
@@ -119,3 +200,21 @@ const AuthorizedDashboard = () => {
 }
 
 export default Dashboard
+
+function shuffleArray<T>(array: T[]): T[] {
+    let currentIndex = array.length, randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex != 0) {
+
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex], array[currentIndex]];
+    }
+
+    return array;
+}
