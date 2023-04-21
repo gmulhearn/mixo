@@ -83,7 +83,7 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
                 </div>
             ) : null}
 
-            <HStack>
+            <HStack maxW={["25%", "35%", "40%"]}>
                 <Image src={currentSong.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" alt="cover art" />
                 <VStack alignItems="start">
                     <Text fontWeight="bold" noOfLines={1}>{currentSong.title}</Text>

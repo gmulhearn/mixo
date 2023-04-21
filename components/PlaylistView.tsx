@@ -1,6 +1,7 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
-import { DeleteIcon, HamburgerIcon } from '@chakra-ui/icons'
+import { DeleteIcon } from '@chakra-ui/icons'
+import { BsThreeDots } from 'react-icons/bs'
 import { Box, Divider, Flex, Heading, HStack, IconButton, Image, Menu, MenuButton, MenuItem, MenuList, Spinner, Text, Tooltip, VStack } from '@chakra-ui/react'
 import React, { Fragment, useState } from 'react'
 import { FaPlay } from "react-icons/fa"
@@ -58,30 +59,38 @@ const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdati
             <HStack>
                 <Box position="relative">
                     <Flex w="100%" h="100%" position="absolute" justifyContent="center" alignItems="center">
-                        <IconButton
-                            hidden={!songIsHovered}
-                            aria-label="play song"
-                            variant="ghost"
-                            onClick={playSong}
-                            icon={<FaPlay />}
-                        />
+                        <Tooltip label="Play song" openDelay={500}>
+
+                            <IconButton
+                                hidden={!songIsHovered}
+                                aria-label="play song"
+                                variant="ghost"
+                                onClick={playSong}
+                                icon={<FaPlay />}
+                            />
+                        </Tooltip>
                     </Flex>
                     <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} minW="4em" w="4em" borderRadius="lg" alt="cover art" />
                 </Box>
                 <VStack alignItems="start">
-                    <Text fontWeight="bold" noOfLines={1} color={isCurrentlyPlaying ? "cyan.300" : "white"}>{song.title}</Text>
+                    <Tooltip label={song.title} openDelay={1000}>
+                        <Text fontWeight="bold" noOfLines={1} color={isCurrentlyPlaying ? "cyan.300" : "white"}>{song.title}</Text>
+                    </Tooltip>
                     <Text color="gray.400" noOfLines={1}>{song.artists.join(", ")}</Text>
                 </VStack>
             </HStack>
             {songIsHovered || isUpdating ? (
                 <Menu>
-                    <MenuButton
-                        as={IconButton}
-                        aria-label='Options'
-                        icon={!isUpdating ? (<HamburgerIcon />) : (<Spinner />)}
-                        isDisabled={isUpdating}
-                        variant='ghost'
-                    />
+                    <Tooltip label="More options" openDelay={500}>
+                        <MenuButton
+                            as={IconButton}
+                            aria-label='Options'
+                            borderRadius="full"
+                            icon={!isUpdating ? (<BsThreeDots />) : (<Spinner />)}
+                            isDisabled={isUpdating}
+                            variant='ghost'
+                        />
+                    </Tooltip>
                     <MenuList>
                         <MenuItem icon={<DeleteIcon />} onClick={removeSong}>
                             Remove

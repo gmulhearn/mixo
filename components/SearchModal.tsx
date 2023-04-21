@@ -1,7 +1,7 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import { AddIcon, CheckIcon, SearchIcon } from '@chakra-ui/icons'
-import { Box, Divider, HStack, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightElement, Modal, ModalContent, ModalOverlay, Spinner, Text, VStack } from '@chakra-ui/react'
+import { Box, Divider, HStack, IconButton, Image, Input, InputGroup, InputLeftElement, InputRightElement, Modal, ModalContent, ModalOverlay, Spinner, Text, Tooltip, VStack } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import { DEFAULT_COVER_ART_IMAGE, FullPlaylist } from './PlaylistView'
 
@@ -26,6 +26,7 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
 
     const { data: searchResults, refetch: updateSearchResults, isLoading: isSearchLoading } = trpc.searchTracks.useQuery({ searchQuery: searchQuery }, { enabled: false })
     const { mutateAsync: addSongToPlaylist } = trpc.addSongToPlaylist.useMutation({})
+    const { mutateAsync: removeSongFromPlaylist } = trpc.removeSongFromPlaylist.useMutation({})
 
     // whenever `searchQuery` changes, we don't refresh the results immediately.
     // we wait a small period of time (<1sec) and check if the `searchQuery` has changed
@@ -59,11 +60,22 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
 
         try {
             await addSongToPlaylist({
-                playlistId: currentPlaylist.id, song: {
-                    platformSpecificId: song.platformSpecificId,
-                    platform: song.platform
-                }
+                playlistId: currentPlaylist.id, song
             })
+
+            refreshCurrentPlaylist()
+        } catch { }
+
+        setSongsPendingUpdate((oldSongs) => oldSongs.filter((s) => s !== song.platformSpecificId))
+    }
+
+    const removeSongFromPlaylistClicked = async (song: GenericTrack) => {
+        if (!currentPlaylist) return
+
+        setSongsPendingUpdate((oldSongs) => [...oldSongs, song.platformSpecificId])
+
+        try {
+            await removeSongFromPlaylist({ playlistId: currentPlaylist.id, song })
 
             refreshCurrentPlaylist()
         } catch { }
@@ -98,28 +110,34 @@ const SearchModal = ({ isOpen, onClose, currentPlaylist, refreshCurrentPlaylist 
                             <HStack>
                                 <Image src={song.coverArtImageUrl ?? DEFAULT_COVER_ART_IMAGE} w="4em" borderRadius="lg" alt="cover art" />
                                 <VStack alignItems="start">
-                                    <Text fontWeight="bold" noOfLines={1}>{song.title}</Text>
+                                    <Tooltip label={song.title} openDelay={500}>
+                                        <Text fontWeight="bold" noOfLines={1}>{song.title}</Text>
+                                    </Tooltip>
                                     <Text color="gray.400" noOfLines={1}>{song.artists.join(", ")}</Text>
                                 </VStack>
                             </HStack>
 
                             {!isSongPendingUpdate(song) ? (
                                 !song.alreadyAdded ? (
-                                    <IconButton
-                                        onClick={() => { addSongToPlaylistClicked(song) }}
-                                        variant="ghost"
-                                        borderRadius="90"
-                                        aria-label="open menu"
-                                        icon={<AddIcon />}
-                                    />
+                                    <Tooltip label="Add to playlist" openDelay={500}>
+                                        <IconButton
+                                            onClick={() => { addSongToPlaylistClicked(song) }}
+                                            variant="ghost"
+                                            borderRadius="90"
+                                            aria-label="open menu"
+                                            icon={<AddIcon />}
+                                        />
+                                    </Tooltip>
                                 ) : (
-                                    <IconButton
-                                        // onClick={removeSongFromPlaylist}
-                                        variant="ghost"
-                                        borderRadius="90"
-                                        aria-label="open menu"
-                                        icon={<CheckIcon />}
-                                    />
+                                    <Tooltip label="Remove from playlist" openDelay={500}>
+                                        <IconButton
+                                            onClick={() => { removeSongFromPlaylistClicked(song) }}
+                                            variant="ghost"
+                                            borderRadius="90"
+                                            aria-label="open menu"
+                                            icon={<CheckIcon />}
+                                        />
+                                    </Tooltip>
                                 )
                             ) : (
                                 <IconButton
