@@ -1,5 +1,5 @@
 import { trpc } from '@/core/appTrpc'
-import { Center, Spinner } from '@chakra-ui/react'
+import { Center, Spinner, useToast } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import Cookies from 'js-cookie'
 import DashboardFrame from '@/components/DashboardFrame'
@@ -30,6 +30,8 @@ const Dashboard = () => {
 }
 
 const AuthorizedDashboard = () => {
+    const toast = useToast()
+
     // tie current playlist ID into localstorage for some persistence between page refreshes
     const [currentPlaylistId, setCurrentPlaylistId] = useState<string | undefined>(localStorage.getItem("MIXO_CURRENT_PLAYLIST_ID") ?? undefined)
     useEffect(() => {
@@ -170,6 +172,13 @@ const AuthorizedDashboard = () => {
 
     const addSongToPriorityQueue = (song: GenericTrack) => {
         setPriorityQueue((curr) => ([...curr, song]))
+        toast({
+            title: "Added to queue",
+            status: "success",
+            duration: 1000,
+            position: 'top',
+            isClosable: true
+        })
     }
 
     return (
