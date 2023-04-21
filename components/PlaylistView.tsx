@@ -4,7 +4,7 @@ import { DeleteIcon } from '@chakra-ui/icons'
 import { BsThreeDots } from 'react-icons/bs'
 import { Box, Divider, Flex, Heading, HStack, IconButton, Image, Menu, MenuButton, MenuItem, MenuList, Spinner, Text, Tooltip, VStack } from '@chakra-ui/react'
 import React, { Fragment, useState } from 'react'
-import { FaPlay } from "react-icons/fa"
+import { FaOutdent, FaPlay } from "react-icons/fa"
 
 export const DEFAULT_COVER_ART_IMAGE = "TODO"
 
@@ -14,7 +14,7 @@ export interface FullPlaylist {
     songs: { song: GenericTrack, addedEpochMs: number }[]
 }
 
-const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist }: { playlist: FullPlaylist, playSong: (song: GenericTrack, indexInPlaylist?: number) => void, currentSong?: GenericTrack, refreshCurrentPlaylist: () => void }) => {
+const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist, addSongToPriorityQueue }: { playlist: FullPlaylist, playSong: (song: GenericTrack, indexInPlaylist?: number) => void, currentSong?: GenericTrack, refreshCurrentPlaylist: () => void, addSongToPriorityQueue: (song: GenericTrack) => void }) => {
 
     const [updatingSongs, setUpdatingSongs] = useState<GenericTrack[]>([])
 
@@ -42,6 +42,7 @@ const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist 
                             isCurrentlyPlaying={currentSong?.platformSpecificId == song.song.platformSpecificId}
                             removeSong={() => { deleteSongFromPlaylist(song.song) }}
                             isUpdating={updatingSongs.find((s) => s.platformSpecificId === song.song.platformSpecificId) !== undefined}
+                            addSongToPriorityQueue={() => { addSongToPriorityQueue(song.song) }}
                         />
                         <Divider />
                     </Fragment>
@@ -51,7 +52,7 @@ const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist 
     )
 }
 
-const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdating }: { song: GenericTrack, playSong: () => void, isCurrentlyPlaying: boolean, removeSong: () => void, isUpdating: boolean }) => {
+const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdating, addSongToPriorityQueue }: { song: GenericTrack, playSong: () => void, isCurrentlyPlaying: boolean, removeSong: () => void, isUpdating: boolean, addSongToPriorityQueue: () => void }) => {
     const [songIsHovered, setSongIsHovered] = useState(false)
 
     return (
@@ -92,6 +93,9 @@ const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdati
                         />
                     </Tooltip>
                     <MenuList>
+                        <MenuItem icon={<FaOutdent />} onClick={addSongToPriorityQueue}>
+                            Add to Queue
+                        </MenuItem>
                         <MenuItem icon={<DeleteIcon />} onClick={removeSong}>
                             Remove
                         </MenuItem>

@@ -40,6 +40,8 @@ const AuthorizedDashboard = () => {
     // where regularIndex is the unshuffled-index
     const [currentQueue, setCurrentQueue] = useState<{ track: GenericTrack, regularIndex: number }[] | undefined>(undefined)
     const [playingIndexInQueue, setPlayingIndexInQueue] = useState<number | undefined>(undefined)
+    // priority queue used to track songs which are manually queued by users
+    const [priorityQueue, setPriorityQueue] = useState<GenericTrack[]>([])
     const [repeatEnabled, setRepeatEnabled] = useState(true)
     const [shuffleEnabled, setShuffleEnabled] = useState(false)
 
@@ -90,6 +92,14 @@ const AuthorizedDashboard = () => {
     }
 
     const playNextSong = () => {
+        // first play from priority queue if exists
+        let prioritySong = priorityQueue.at(0)
+        if (prioritySong) {
+            setCurrentSong(prioritySong)
+            setPriorityQueue(priorityQueue.slice(1))
+            return
+        }
+
         if (!currentQueue || playingIndexInQueue === undefined) return
 
         const nextIndex = (playingIndexInQueue + 1) % currentQueue.length
@@ -158,6 +168,10 @@ const AuthorizedDashboard = () => {
         setShuffleEnabled((prev) => !prev)
     }
 
+    const addSongToPriorityQueue = (song: GenericTrack) => {
+        setPriorityQueue((curr) => ([...curr, song]))
+    }
+
     return (
         <>
             <Head>
@@ -168,7 +182,7 @@ const AuthorizedDashboard = () => {
             </Head>
             <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
                 {currentPlaylist ? (
-                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} />
+                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} addSongToPriorityQueue={addSongToPriorityQueue} />
                 ) : (
                     currentPlaylistId ? (
                         <Center mt="8">
