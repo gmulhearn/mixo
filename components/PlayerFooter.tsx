@@ -1,11 +1,11 @@
 import { GenericTrack } from '@/server/routers/searchProcedures'
-import { Avatar, HStack, IconButton, Image, Text, useColorModeValue, VStack } from '@chakra-ui/react'
+import { Avatar, HStack, IconButton, Image, Text, Tooltip, useColorModeValue, VStack } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
 import YouTube from 'react-youtube'
 import { Options } from 'youtube-player/dist/types';
 import { DEFAULT_COVER_ART_IMAGE } from './PlaylistView'
 import SpotifyPlayer from 'react-spotify-web-playback';
-import { FaPause, FaPlay, FaRandom, FaRetweet, FaStepBackward, FaStepForward } from 'react-icons/fa';
+import { FaOutdent, FaPause, FaPlay, FaRandom, FaRetweet, FaStepBackward, FaStepForward } from 'react-icons/fa';
 
 const YOUTUBE_PLAYER_OPTS: Options = {
     height: "1",
@@ -22,7 +22,32 @@ interface YoutubePlayerTarget {
     playVideo: () => void
 }
 
-const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPreviousSong, repeatEnabled, toggleRepeatEnabled, shuffleEnabled, toggleShuffleEnabled }: { spotifyAccessToken: string, currentSong?: GenericTrack, playNextSong: () => void, playPreviousSong: () => void, repeatEnabled: boolean, toggleRepeatEnabled: () => void, shuffleEnabled: boolean, toggleShuffleEnabled: () => void }) => {
+interface PlayerFooterProps {
+    spotifyAccessToken: string,
+    currentSong?: GenericTrack,
+    playNextSong: () => void,
+    playPreviousSong: () => void,
+    repeatEnabled: boolean,
+    toggleRepeatEnabled: () => void,
+    shuffleEnabled: boolean,
+    toggleShuffleEnabled: () => void,
+    queueViewShowing: boolean,
+    toggleShowQueueView: () => void
+}
+
+const PlayerFooter = ({
+    spotifyAccessToken,
+    currentSong,
+    playNextSong,
+    playPreviousSong,
+    repeatEnabled,
+    toggleRepeatEnabled,
+    shuffleEnabled,
+    toggleShuffleEnabled,
+    queueViewShowing,
+    toggleShowQueueView
+}: PlayerFooterProps) => {
+
     const footerBgColor = useColorModeValue('white', 'gray.900')
     const footerBorderColor = useColorModeValue('gray.200', 'gray.700')
 
@@ -59,6 +84,7 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
             borderTop="1px"
             borderTopColor={footerBorderColor}
             minH="5.5em"
+            justifyContent="space-between"
         >
             {currentSong.platform.valueOf() == 1 ? ( // TODO - do not use numbers!
                 <YouTube
@@ -93,6 +119,16 @@ const PlayerFooter = ({ spotifyAccessToken, currentSong, playNextSong, playPrevi
                     <Text color="gray.400" noOfLines={1}>{currentSong.artists.join(", ")}</Text>
                 </VStack>
             </HStack>
+            <Tooltip label={queueViewShowing ? "Hide Queue" : "Show Queue"} openDelay={250}>
+                <IconButton
+                    zIndex={1}
+                    aria-label='queue'
+                    variant="ghost"
+                    onClick={toggleShowQueueView}
+                    color={queueViewShowing ? "cyan.500" : "white"}
+                    icon={<FaOutdent />}
+                />
+            </Tooltip>
             <HStack position="absolute" justifyContent="center" w="100%"
                 left="-2" // FIXME - hack to offset the padding of parent
             >

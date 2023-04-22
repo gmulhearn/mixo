@@ -9,6 +9,7 @@ import PlayerFooter from '@/components/PlayerFooter'
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import Head from 'next/head'
 import { useConsoleLog } from '@/utils/useConsoleLog'
+import QueueView from '@/components/QueueView'
 
 const Dashboard = () => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | undefined>(undefined)
@@ -44,11 +45,9 @@ const AuthorizedDashboard = () => {
     const [playingIndexInQueue, setPlayingIndexInQueue] = useState<number | undefined>(undefined)
     // priority queue used to track songs which are manually queued by users
     const [priorityQueue, setPriorityQueue] = useState<GenericTrack[]>([])
+    const [queueViewShowing, setQueueViewShowing] = useState(false)
     const [repeatEnabled, setRepeatEnabled] = useState(true)
     const [shuffleEnabled, setShuffleEnabled] = useState(false)
-
-    useConsoleLog(playingIndexInQueue)
-    useConsoleLog(currentQueue)
 
     const { data: spotifyUserDetails } = trpc.spotifyMe.useQuery()
     const { data: currentSpotifyAccessToken } = trpc.getAccessToken.useQuery()
@@ -181,6 +180,12 @@ const AuthorizedDashboard = () => {
         })
     }
 
+    const changeCurrentPlaylist = (playlistId?: string) => {
+        setCurrentPlaylistId(playlistId)
+        // hide queue screen if showing
+        setQueueViewShowing(false)
+    }
+
     return (
         <>
             <Head>
@@ -189,19 +194,25 @@ const AuthorizedDashboard = () => {
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
-            <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
-                {currentPlaylist ? (
-                    <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists} addSongToPriorityQueue={addSongToPriorityQueue} />
+            <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={changeCurrentPlaylist} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
+                {queueViewShowing ? (
+                    <QueueView priorityQueue={priorityQueue} playSong={playSong} addSongToPriorityQueue={addSongToPriorityQueue} currentQueue={currentQueue?.map(({track}) => track)} playingIndexInQueue={playingIndexInQueue} />
                 ) : (
-                    currentPlaylistId ? (
-                        <Center mt="8">
-                            <Spinner />
-                        </Center>
-                    ) : (
-                        <>
-                            Select a playlist..
-                        </>
-                    )
+                    <>
+                        {currentPlaylist ? (
+                            <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists} addSongToPriorityQueue={addSongToPriorityQueue} />
+                        ) : (
+                            currentPlaylistId ? (
+                                <Center mt="8">
+                                    <Spinner />
+                                </Center>
+                            ) : (
+                                <>
+                                    Select a playlist..
+                                </>
+                            )
+                        )}
+                    </>
                 )}
             </DashboardFrame>
             {currentSpotifyAccessToken ? (
@@ -214,6 +225,8 @@ const AuthorizedDashboard = () => {
                     shuffleEnabled={shuffleEnabled}
                     toggleRepeatEnabled={toggleRepeatEnabled}
                     toggleShuffleEnabled={toggleShuffleEnabled}
+                    queueViewShowing={queueViewShowing}
+                    toggleShowQueueView={() => { setQueueViewShowing((prev) => !prev) }}
                 />
             ) : (
                 <></>
