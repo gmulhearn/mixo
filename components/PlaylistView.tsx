@@ -82,8 +82,13 @@ const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist,
                             )}
                         </InputRightElement>
                         <Input
+                            autoFocus={true}
+                            onBlur={() => { setIsEditingPlaylistName(false) }}
                             value={newPlaylistNameInput}
-                            onKeyDown={(e) => { if (e.key == "Enter") { saveNewPlaylistNameClicked() } }}
+                            onKeyDown={(e) => { 
+                                if (e.key == "Enter") { saveNewPlaylistNameClicked() }
+                                if (e.key == "Escape") { setIsEditingPlaylistName(false) }
+                            }}
                             onChange={(e) => { setNewPlaylistNameInput(e.target.value) }}
                             disabled={playlistNameIsUpdating}
                         />
