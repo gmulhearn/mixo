@@ -1,10 +1,10 @@
 import { trpc } from '@/core/appTrpc'
 import { GenericTrack } from '@/server/routers/searchProcedures'
-import { DeleteIcon } from '@chakra-ui/icons'
+import { CheckIcon, CloseIcon, DeleteIcon } from '@chakra-ui/icons'
 import { BsThreeDots } from 'react-icons/bs'
-import { Box, Divider, Flex, Heading, HStack, IconButton, Image, Menu, MenuButton, MenuItem, MenuList, Spinner, Text, Tooltip, VStack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Heading, HStack, IconButton, Image, Input, InputGroup, InputRightElement, Menu, MenuButton, MenuItem, MenuList, Spinner, Text, Tooltip, VStack } from '@chakra-ui/react'
 import React, { Fragment, useState } from 'react'
-import { FaOutdent, FaPlay } from "react-icons/fa"
+import { FaEdit, FaOutdent, FaPlay } from "react-icons/fa"
 
 export const DEFAULT_COVER_ART_IMAGE = "TODO"
 
@@ -14,11 +14,37 @@ export interface FullPlaylist {
     songs: { song: GenericTrack, addedEpochMs: number }[]
 }
 
-const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist, addSongToPriorityQueue }: { playlist: FullPlaylist, playSong: (song: GenericTrack, indexInPlaylist?: number) => void, currentSong?: GenericTrack, refreshCurrentPlaylist: () => void, addSongToPriorityQueue: (song: GenericTrack) => void }) => {
+const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist, refreshPlaylists, addSongToPriorityQueue }: { playlist: FullPlaylist, playSong: (song: GenericTrack, indexInPlaylist?: number) => void, currentSong?: GenericTrack, refreshCurrentPlaylist: () => void, refreshPlaylists: () => void, addSongToPriorityQueue: (song: GenericTrack) => void }) => {
 
     const [updatingSongs, setUpdatingSongs] = useState<GenericTrack[]>([])
 
+    const [playlistNameIsHovered, setPlaylistNameIsHovered] = useState(false)
+    const [isEditingPlaylistName, setIsEditingPlaylistName] = useState(false)
+    const [newPlaylistNameInput, setNewPlaylistNameInput] = useState("")
+    const [playlistNameIsUpdating, setPlaylistNameIsUpdating] = useState(false)
+
     const { mutateAsync: removeSongFromPlaylist } = trpc.removeSongFromPlaylist.useMutation()
+    const { mutateAsync: editPlaylist } = trpc.editPlaylist.useMutation()
+
+    const editPlaylistNameClicked = () => {
+        setNewPlaylistNameInput(playlist.name)
+        setIsEditingPlaylistName(true)
+    }
+
+    const saveNewPlaylistNameClicked = async () => {
+        const formattedPlaylistName = newPlaylistNameInput.trim()
+
+        if (formattedPlaylistName.length === 0) return
+        setPlaylistNameIsUpdating(true)
+        try {
+            await editPlaylist({ playlistId: playlist.id, newPlaylistName: formattedPlaylistName })
+            refreshCurrentPlaylist()
+            refreshPlaylists()
+        } catch { }
+        setPlaylistNameIsUpdating(false)
+
+        setIsEditingPlaylistName(false)
+    }
 
     const deleteSongFromPlaylist = async (song: GenericTrack) => {
         setUpdatingSongs((currentSongs) => [...currentSongs, song])
@@ -29,9 +55,55 @@ const PlaylistView = ({ playlist, playSong, currentSong, refreshCurrentPlaylist,
         setUpdatingSongs((currentSongs) => currentSongs.filter((s) => s.platformSpecificId != song.platformSpecificId))
     }
 
+
     return (
         <Box w="100%">
-            <Heading>{playlist.name}</Heading>
+            <HStack onMouseEnter={() => { setPlaylistNameIsHovered(true) }} onMouseLeave={() => setPlaylistNameIsHovered(false)}>
+                {isEditingPlaylistName ? (<>
+                    <InputGroup>
+                        <InputRightElement>
+                            {playlistNameIsUpdating ? (
+                                <Spinner />
+                            ) : (
+                                <HStack mr="8">
+                                    <IconButton
+                                        aria-label="save"
+                                        size="xs"
+                                        onClick={saveNewPlaylistNameClicked}
+                                        icon={<CheckIcon />}
+                                    />
+                                    <IconButton
+                                        aria-label="cancel"
+                                        size="xs"
+                                        onClick={() => { setIsEditingPlaylistName(false) }}
+                                        icon={<CloseIcon />}
+                                    />
+                                </HStack>
+                            )}
+                        </InputRightElement>
+                        <Input
+                            value={newPlaylistNameInput}
+                            onKeyDown={(e) => { if (e.key == "Enter") { saveNewPlaylistNameClicked() } }}
+                            onChange={(e) => { setNewPlaylistNameInput(e.target.value) }}
+                            disabled={playlistNameIsUpdating}
+                        />
+                    </InputGroup>
+                </>) : (
+                    <>
+                        <Heading>{playlist.name}</Heading>
+                        {playlistNameIsHovered ? (
+                            <Tooltip label="Edit playlist name" openDelay={500}>
+                                <IconButton
+                                    aria-label="change playlist name"
+                                    variant="ghost"
+                                    onClick={editPlaylistNameClicked}
+                                    icon={<FaEdit />}
+                                />
+                            </Tooltip>
+                        ) : null}
+                    </>
+                )}
+            </HStack>
             <Divider my="4" />
             <VStack mx="4" mb="16">
                 {playlist.songs.map((song, index) => (
