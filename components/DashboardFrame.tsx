@@ -22,12 +22,12 @@ export default function DashboardFrame({
     refreshCurrentPlaylist: () => {},
     refreshPlaylists: () => {},
 }) {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen: drawerIsOpen, onOpen: onOpenDrawer, onClose: onCloseDrawer } = useDisclosure();
 
     return (
         <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.900')}>
             <DashboardPlaylistSidebar
-                onClose={() => onClose}
+                onCloseDrawer={() => {}}
                 playlistsMetadata={playlistsMetadata}
                 setCurrentPlaylistId={setCurrentPlaylistId}
                 refreshPlaylists={refreshPlaylists}
@@ -36,18 +36,18 @@ export default function DashboardFrame({
             />
             <Drawer
                 autoFocus={false}
-                isOpen={isOpen}
+                isOpen={drawerIsOpen}
                 placement="left"
-                onClose={onClose}
+                onClose={onCloseDrawer}
                 returnFocusOnClose={false}
-                onOverlayClick={onClose}
+                onOverlayClick={onCloseDrawer}
                 size="full">
                 <DrawerContent>
-                    <DashboardPlaylistSidebar onClose={onClose} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} refreshPlaylists={refreshPlaylists} />
+                    <DashboardPlaylistSidebar onCloseDrawer={onCloseDrawer} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={setCurrentPlaylistId} refreshPlaylists={refreshPlaylists} currentPlaylistId={currentPlaylist?.id} />
                 </DrawerContent>
             </Drawer>
             {/* mobilenav */}
-            <DashboardTopbar onOpen={onOpen} userDetails={userDetails} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refreshCurrentPlaylist} />
+            <DashboardTopbar onOpen={onOpenDrawer} userDetails={userDetails} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refreshCurrentPlaylist} />
             <Box ml={{ base: 0, md: 60 }} p="4">
                 {children}
             </Box>

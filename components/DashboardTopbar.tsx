@@ -38,6 +38,7 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
                 variant="outline"
                 aria-label="open menu"
                 icon={<FiMenu />}
+                zIndex={1}
             />
 
             <Text
@@ -49,6 +50,7 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
                 minW="100%"
                 justifyContent="center"
                 left="0"
+                zIndex={0}
             >
                 mixo.
             </Text>
@@ -60,7 +62,9 @@ export const DashboardTopbar = ({ onOpen, userDetails, currentPlaylist, refreshC
                 <Input placeholder="Search for songs" tabIndex={-1} style={{ pointerEvents: "none" }} />
             </InputGroup>
 
-            <HStack spacing={{ base: '0', md: '6' }}>
+            <HStack spacing={{ base: '0', md: '6' }}
+                zIndex={1}
+            >
                 <Flex alignItems={'center'}>
                     <IconButton
                         display={{ base: 'flex', md: 'none' }}
