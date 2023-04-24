@@ -9,7 +9,9 @@ import PlayerFooter from '@/components/PlayerFooter'
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import Head from 'next/head'
 import { useConsoleLog } from '@/utils/useConsoleLog'
-import QueueView from '@/components/QueueView'
+import QueueView, { PRIORITY_QUEUE_DROPPABLE_ID } from '@/components/QueueView'
+import { v4 } from 'uuid'
+import { DragDropContext, DropResult } from 'react-beautiful-dnd'
 
 const Dashboard = () => {
     const [isAuthorized, setIsAuthorized] = useState<boolean | undefined>(undefined)
@@ -30,6 +32,11 @@ const Dashboard = () => {
     return <AuthorizedDashboard />
 }
 
+interface PriorityQueueSong {
+    id: string, // local UUID ID, just used to differentiate items considering indexes can change with rearranging
+    song: GenericTrack
+}
+
 const AuthorizedDashboard = () => {
     const toast = useToast()
 
@@ -44,7 +51,7 @@ const AuthorizedDashboard = () => {
     const [currentQueue, setCurrentQueue] = useState<{ track: GenericTrack, regularIndex: number }[] | undefined>(undefined)
     const [playingIndexInQueue, setPlayingIndexInQueue] = useState<number | undefined>(undefined)
     // priority queue used to track songs which are manually queued by users
-    const [priorityQueue, setPriorityQueue] = useState<GenericTrack[]>([])
+    const [priorityQueue, setPriorityQueue] = useState<PriorityQueueSong[]>([])
     const [queueViewShowing, setQueueViewShowing] = useState(false)
     const [repeatEnabled, setRepeatEnabled] = useState(true)
     const [shuffleEnabled, setShuffleEnabled] = useState(false)
@@ -96,7 +103,7 @@ const AuthorizedDashboard = () => {
         // first play from priority queue if exists
         let prioritySong = priorityQueue.at(0)
         if (prioritySong) {
-            setCurrentSong(prioritySong)
+            setCurrentSong(prioritySong.song)
             setPriorityQueue(priorityQueue.slice(1))
             return
         }
@@ -170,7 +177,7 @@ const AuthorizedDashboard = () => {
     }
 
     const addSongToPriorityQueue = (song: GenericTrack) => {
-        setPriorityQueue((curr) => ([...curr, song]))
+        setPriorityQueue((curr) => ([...curr, { id: v4(), song: song }]))
         toast({
             title: "Added to queue",
             status: "success",
@@ -193,51 +200,69 @@ const AuthorizedDashboard = () => {
         setQueueViewShowing(false)
     }
 
+    const handleDNDDropEnd = (result: DropResult) => {
+        // currently we only handle priority queue rearranging
+        if (result.destination?.droppableId !== PRIORITY_QUEUE_DROPPABLE_ID || result.source.droppableId !== PRIORITY_QUEUE_DROPPABLE_ID) return
+        let originalIndex = result.source.index
+        let newIndex = result.destination.index
+
+        let newQueue = priorityQueue.slice()
+        let item = newQueue[originalIndex]
+        newQueue.splice(originalIndex, 1)
+        newQueue.splice(newIndex, 0, item)
+
+        setPriorityQueue(newQueue)
+    }
+
     return (
         <>
-            <Head>
-                <title>Mixo - Dashboard</title>
-                <meta name="description" content="Mixo streamer" />
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
-            <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={changeCurrentPlaylist} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
-                {queueViewShowing ? (
-                    <QueueView priorityQueue={priorityQueue} playSong={playSong} addSongToPriorityQueue={addSongToPriorityQueue} removeSongFromPriorityQueue={removeSongFromPriorityQueue} currentQueue={currentQueue?.map(({ track }) => track)} playingIndexInQueue={playingIndexInQueue} />
-                ) : (
-                    <>
-                        {currentPlaylist ? (
-                            <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists} addSongToPriorityQueue={addSongToPriorityQueue} />
-                        ) : (
-                            currentPlaylistId ? (
-                                <Center mt="8">
-                                    <Spinner />
-                                </Center>
+            <DragDropContext
+                onDragEnd={handleDNDDropEnd}
+            >
+                <Head>
+                    <title>Mixo - Dashboard</title>
+                    <meta name="description" content="Mixo streamer" />
+                    <meta name="viewport" content="width=device-width, initial-scale=1" />
+                    <link rel="icon" href="/favicon.ico" />
+                </Head>
+                <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={changeCurrentPlaylist} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
+                    {queueViewShowing ? (
+                        <QueueView priorityQueue={priorityQueue} playSong={playSong} addSongToPriorityQueue={addSongToPriorityQueue} removeSongFromPriorityQueue={removeSongFromPriorityQueue} currentQueue={currentQueue?.map(({ track }) => track)} playingIndexInQueue={playingIndexInQueue} />
+                    ) : (
+                        <>
+                            {currentPlaylist ? (
+                                <PlaylistView playlist={currentPlaylist} playSong={playSong} currentSong={currentSong} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists} addSongToPriorityQueue={addSongToPriorityQueue} />
                             ) : (
-                                <>
-                                    Select a playlist..
-                                </>
-                            )
-                        )}
-                    </>
+                                currentPlaylistId ? (
+                                    <Center mt="8">
+                                        <Spinner />
+                                    </Center>
+                                ) : (
+                                    <>
+                                        Select a playlist..
+                                    </>
+                                )
+                            )}
+                        </>
+                    )}
+                </DashboardFrame>
+                {currentSpotifyAccessToken ? (
+                    <PlayerFooter
+                        spotifyAccessToken={currentSpotifyAccessToken}
+                        currentSong={currentSong}
+                        playNextSong={playNextSong}
+                        playPreviousSong={playPreviousSong}
+                        repeatEnabled={repeatEnabled}
+                        shuffleEnabled={shuffleEnabled}
+                        toggleRepeatEnabled={toggleRepeatEnabled}
+                        toggleShuffleEnabled={toggleShuffleEnabled}
+                        queueViewShowing={queueViewShowing}
+                        toggleShowQueueView={() => { setQueueViewShowing((prev) => !prev) }}
+                    />
+                ) : (
+                    <></>
                 )}
-            </DashboardFrame>
-            {currentSpotifyAccessToken ? (
-                <PlayerFooter
-                    spotifyAccessToken={currentSpotifyAccessToken}
-                    currentSong={currentSong}
-                    playNextSong={playNextSong}
-                    playPreviousSong={playPreviousSong}
-                    repeatEnabled={repeatEnabled}
-                    shuffleEnabled={shuffleEnabled}
-                    toggleRepeatEnabled={toggleRepeatEnabled}
-                    toggleShuffleEnabled={toggleShuffleEnabled}
-                    queueViewShowing={queueViewShowing}
-                    toggleShowQueueView={() => { setQueueViewShowing((prev) => !prev) }}
-                />
-            ) : (
-                <></>
-            )}
+            </DragDropContext>
         </>
     )
 }
