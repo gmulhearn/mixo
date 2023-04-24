@@ -6,7 +6,6 @@ import { Box, Divider, Flex, Heading, HStack, IconButton, Image, Input, InputGro
 import React, { Fragment, useMemo, useState } from 'react'
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { FaEdit, FaOutdent, FaPlay } from "react-icons/fa"
-import { v4 as uuid } from 'uuid'
 
 export const DEFAULT_COVER_ART_IMAGE = "TODO"
 export const PRIORITY_QUEUE_DROPPABLE_ID = "priority-queue"
