@@ -180,6 +180,13 @@ const AuthorizedDashboard = () => {
         })
     }
 
+    const removeSongFromPriorityQueue = (index: number) => {
+        setPriorityQueue((curr) => {
+            curr.splice(index, 1)
+            return curr.slice() // clone array trick
+        })
+    }
+
     const changeCurrentPlaylist = (playlistId?: string) => {
         setCurrentPlaylistId(playlistId)
         // hide queue screen if showing
@@ -196,7 +203,7 @@ const AuthorizedDashboard = () => {
             </Head>
             <DashboardFrame userDetails={userDetails} playlistsMetadata={playlistsMetadata} setCurrentPlaylistId={changeCurrentPlaylist} currentPlaylist={currentPlaylist} refreshCurrentPlaylist={refetchCurrentPlaylist} refreshPlaylists={getPlaylists}>
                 {queueViewShowing ? (
-                    <QueueView priorityQueue={priorityQueue} playSong={playSong} addSongToPriorityQueue={addSongToPriorityQueue} currentQueue={currentQueue?.map(({track}) => track)} playingIndexInQueue={playingIndexInQueue} />
+                    <QueueView priorityQueue={priorityQueue} playSong={playSong} addSongToPriorityQueue={addSongToPriorityQueue} removeSongFromPriorityQueue={removeSongFromPriorityQueue} currentQueue={currentQueue?.map(({ track }) => track)} playingIndexInQueue={playingIndexInQueue} />
                 ) : (
                     <>
                         {currentPlaylist ? (

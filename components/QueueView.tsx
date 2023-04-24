@@ -18,11 +18,12 @@ interface QueueViewProps {
     priorityQueue: GenericTrack[],
     playSong: (song: GenericTrack, index?: number) => void,
     addSongToPriorityQueue: (song: GenericTrack) => void,
+    removeSongFromPriorityQueue: (index: number) => void
     currentQueue: GenericTrack[] | undefined,
-    playingIndexInQueue: number | undefined
+    playingIndexInQueue: number | undefined,
 }
 
-const QueueView = ({ priorityQueue, playSong, addSongToPriorityQueue, currentQueue, playingIndexInQueue }: QueueViewProps) => {
+const QueueView = ({ priorityQueue, playSong, addSongToPriorityQueue, currentQueue, playingIndexInQueue, removeSongFromPriorityQueue }: QueueViewProps) => {
 
     const mainQueueSongs: GenericTrack[] | undefined = useMemo(() => {
         if (currentQueue === undefined || playingIndexInQueue === undefined) return undefined
@@ -36,15 +37,17 @@ const QueueView = ({ priorityQueue, playSong, addSongToPriorityQueue, currentQue
             <Heading size='md'>Playing Next</Heading>
             <Divider my="4" />
             <VStack mx="4" mb="4">
-                {priorityQueue.map((song) => (
+                {priorityQueue.map((song, i) => (
                     <Fragment key={song.platformSpecificId}>
                         <SongItemView
                             song={song}
                             playSong={() => { playSong(song) }}  // TODO - playing here is dangerous... should i just disable playing?
                             isCurrentlyPlaying={false}
-                            removeSong={() => { }}
+                            removeSongFromPriorityQueue={() => { removeSongFromPriorityQueue(i) }}
+                            isRemoveable={true}
                             isUpdating={false}
                             addSongToPriorityQueue={() => { addSongToPriorityQueue(song) }}
+
                         />
                         <Divider />
                     </Fragment>
@@ -53,15 +56,16 @@ const QueueView = ({ priorityQueue, playSong, addSongToPriorityQueue, currentQue
             <Heading size='md'>Playing After</Heading>
             <Divider my="4" />
             <VStack mx="4" mb="16">
-            {mainQueueSongs?.map((song) => (
+                {mainQueueSongs?.map((song) => (
                     <Fragment key={song.platformSpecificId}>
                         <SongItemView
                             song={song}
                             playSong={() => { playSong(song) }} // TODO - playing here is dangerous... should i just disable playing?
                             isCurrentlyPlaying={false}
-                            removeSong={() => { }}
                             isUpdating={false}
                             addSongToPriorityQueue={() => { addSongToPriorityQueue(song) }}
+                            removeSongFromPriorityQueue={() => { }}
+                            isRemoveable={false}
                         />
                         <Divider />
                     </Fragment>
@@ -71,7 +75,8 @@ const QueueView = ({ priorityQueue, playSong, addSongToPriorityQueue, currentQue
     )
 }
 
-const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdating, addSongToPriorityQueue }: { song: GenericTrack, playSong: () => void, isCurrentlyPlaying: boolean, removeSong: () => void, isUpdating: boolean, addSongToPriorityQueue: () => void }) => {
+// TODO - make SOngItemView generic for all screens
+const SongItemView = ({ song, playSong, isCurrentlyPlaying, isUpdating, addSongToPriorityQueue, removeSongFromPriorityQueue, isRemoveable }: { song: GenericTrack, playSong: () => void, isCurrentlyPlaying: boolean, isUpdating: boolean, addSongToPriorityQueue: () => void, removeSongFromPriorityQueue: () => void, isRemoveable: boolean }) => {
     const [songIsHovered, setSongIsHovered] = useState(false)
 
     return (
@@ -115,9 +120,11 @@ const SongItemView = ({ song, playSong, isCurrentlyPlaying, removeSong, isUpdati
                         <MenuItem icon={<FaOutdent />} onClick={addSongToPriorityQueue}>
                             Add to Queue
                         </MenuItem>
-                        <MenuItem icon={<DeleteIcon />} onClick={removeSong}>
-                            Remove
-                        </MenuItem>
+                        {isRemoveable ? (
+                            <MenuItem icon={<DeleteIcon />} onClick={removeSongFromPriorityQueue}>
+                                Remove from Queue
+                            </MenuItem>
+                        ) : null}
 
                     </MenuList>
                 </Menu>
