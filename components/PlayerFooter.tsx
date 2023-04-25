@@ -1,11 +1,12 @@
 import { GenericTrack } from '@/server/routers/searchProcedures'
 import { Avatar, HStack, IconButton, Image, Text, Tooltip, useColorModeValue, VStack } from '@chakra-ui/react'
 import React, { useEffect, useState } from 'react'
-import YouTube from 'react-youtube'
+import YouTube, { YouTubeEvent } from 'react-youtube'
 import { Options } from 'youtube-player/dist/types';
 import { DEFAULT_COVER_ART_IMAGE } from './PlaylistView'
-import SpotifyPlayer from 'react-spotify-web-playback';
+import SpotifyPlayer, { CallbackState } from 'react-spotify-web-playback';
 import { FaOutdent, FaPause, FaPlay, FaRandom, FaRetweet, FaStepBackward, FaStepForward } from 'react-icons/fa';
+import PlayerStates from 'youtube-player/dist/constants/PlayerStates';
 
 const YOUTUBE_PLAYER_OPTS: Options = {
     height: "1",
@@ -54,10 +55,14 @@ const PlayerFooter = ({
     const [isPlaying, setIsPlaying] = useState(false);
 
     const [youtubePlayerTarget, setYoutubePlayerTarget] = useState<YoutubePlayerTarget | undefined>(undefined)
+    const [spotifyEnabled, setSpotifyEnabled] = useState(true);
 
     useEffect(() => {
         if (!currentSong) return
+
         // song has changed
+        // enable spotify if new song is spotify
+        setSpotifyEnabled(currentSong.platform == 0) // TODO - do not use numbers!
         setIsPlaying(true)
     }, [currentSong])
 
@@ -71,6 +76,20 @@ const PlayerFooter = ({
             }
         }
         setIsPlaying(!isPlaying)
+    }
+
+    const handleYoutubePlayerStateChange = (event: YouTubeEvent<number>) => {
+        if (event.data === PlayerStates.ENDED) {
+            playNextSong()
+        }
+    }
+
+    const handleSpotifyPlayerCallback = (state: CallbackState) => {
+        // if song ended
+        if (state.type == 'player_update' && state.progressMs == 0 && state.isPlaying == false && state.previousTracks.length > 0) {
+            setSpotifyEnabled(false); // temporarily tear down spotify, required for spotify to spotify playback
+            playNextSong()
+        }
     }
 
     if (!currentSong) {
@@ -93,18 +112,18 @@ const PlayerFooter = ({
                     onReady={(e) => {
                         setYoutubePlayerTarget(e.target);
                     }}
-                // onStateChange={handleYoutubePlayerStateChange}
+                    onStateChange={handleYoutubePlayerStateChange}
                 />
             ) : null}
 
-            {currentSong.platform.valueOf() == 0 ? ( // TODO - do not use numbers!
+            {currentSong.platform.valueOf() == 0 && spotifyEnabled ? ( // TODO - do not use numbers!
                 <div style={{ display: "none" }}>
                     <SpotifyPlayer
                         token={spotifyAccessToken}
                         uris={[`spotify:track:${currentSong.platformSpecificId}`]}
                         autoPlay={true}
                         play={isPlaying}
-                    // callback={handleSpotifyPlayerCallback}
+                        callback={handleSpotifyPlayerCallback}
                     />
                 </div>
             ) : null}
