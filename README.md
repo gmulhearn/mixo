@@ -1,5 +1,5 @@
 # Mixo
-Mixo is a service and webapp for creating, managing and seamlessly listening to music playlist with content from both Spotify and Youtube.
+Mixo is a service and webapp for creating, managing and seamlessly listening to music playlists with content from both Spotify and Youtube.
 
 ## Features
 ### Playlist Management
