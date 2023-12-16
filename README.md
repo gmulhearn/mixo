@@ -1,38 +1,42 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Mixo
+Mixo is a service and webapp for creating, managing and seamlessly listening to music playlist with content from both Spotify and Youtube.
 
-## Getting Started
+## Features
+### Playlist Management
+![Playlist Management](docs/assets/playlist-management.gif)
 
-First, run the development server:
+### Search Songs on Multiple Platforms
+![Search](docs/assets/add-song.gif)
+Add songs to your playlists via multi-platform search (YouTube & Spotify).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+### Mixed Playback
+![Playback](docs/assets/playback.gif)
+Seamless playback between songs from different platforms.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Manage Playback Queue
+![Queue](docs/assets/queue-management.gif)
+Manage playback by adding to queue and rearranging.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+# What's the catch?
+Unfortunately this project is not suitable for production, as it's possibly not in line with Spotify's current production [developer guidelines](https://developer.spotify.com/policy#):
+> Do not create any product or service which is integrated with streams or content from another service.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Due to this, this project will remain in dev-mode for the time being, meaning that only pre-selected Spotify users can use the dev deployment of this site:  [mixo.vercel.app](mixo.vercel.app). If you would like access, please contact me [gmulhearn@proton.me](mailto:gmulhearn@proton.me). Alternatively you can follow the guide below to run your own service + webapp.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+# Run the Service
+This app is a standard NextJS project, using TRPC for client-server interactions, Spotify API for auth and song data, and MongoDB for storing playlist data. Given the dependency on Spotify API + MongoDB, some setup is required here before the service can be ran.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Firstly, setup the `.env` from the template: `cp .env.template .env`
 
-## Learn More
+## Mongo
+Head over to https://cloud.mongodb.com and follow the guide to deploy a cluster, then follow the instructions to get a MongoDB URI. It should look something like `mongodb+srv://[..]`. Paste this URI as `MONGODB_URI` in your `.env`.
 
-To learn more about Next.js, take a look at the following resources:
+## Spotify
+**(Requires spotify premium).**
+1. Head to https://developer.spotify.com and create a developer account
+2. Create a new app for this service
+3. Copy the client ID and client secret from your app's information into the `.env` (`SPOTIFY_CLIENT_ID` & `SPOTIFY_CLIENT_SECRET`)
+4. Edit the "Redirect URIs" of your app to point to where your webapp will be running (e.g. `http://localhost:3000/api/spotify/callback` for local development).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Running Locally
+`npm run dev`
